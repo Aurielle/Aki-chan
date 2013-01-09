@@ -1,0 +1,13 @@
+irc:
+	network:
+		server: irc.rizon.net
+		port: 6667
+
+		nick: Akichan
+		password:
+		alternativeNicks: []
+		ident: Aki-chan
+		user: Aki-chan - ReactPHP & Nette Framework driven bot
+
+		channels:
+			- fairytail

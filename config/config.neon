@@ -1,0 +1,45 @@
+#
+# SECURITY WARNING: it is CRITICAL that this file & directory are NOT accessible directly via a web browser!
+#
+# If you don't protect this directory from direct web access, anybody will be able to see your passwords.
+# http://nette.org/security-warning
+#
+common:
+	php:
+		date.timezone: Europe/Prague
+
+	services:
+		irc.bot:
+			class: Aki\Irc\Bot
+
+		eventLoop:
+			class: React\EventLoop\LoopInterface
+			factory: React\EventLoop\Factory::create
+
+		connection:
+			class: Aki\Irc\Connection
+
+		ircSocket:
+			class: Aki\Stream\IrcSocket
+
+		stdin:
+			class: Aki\Stream\Stdin
+
+		stdout:
+			class: Aki\Stream\Stdout
+
+		cliLogger:
+			class: Aki\Commands\CliLogger
+			tags: [run]
+
+		#pingPong:
+		#	class: Aki\Commands\PingPong
+		#	tags: [eventSubscriber]
+
+		#ctcpResponse:
+		#	class: Aki\Commands\CtcpResponse
+		#	tags: [eventSubscriber]
+
+production < common:
+
+development < common:
