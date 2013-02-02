@@ -24,7 +24,7 @@ class Stdout extends Nette\Object
 	public function __construct()
 	{
 		$this->socket = STDOUT;
-		stream_set_blocking($this->socket, FALSE);
+		stream_set_blocking($this->socket, 0);
 	}
 
 

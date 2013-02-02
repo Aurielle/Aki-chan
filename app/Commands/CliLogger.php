@@ -40,13 +40,15 @@ class CliLogger extends Nette\Object
 	}
 
 
-	public function onDataReceived($data)
+	public function onDataReceived($data, $connection)
 	{
+		$data = Aki\Irc\Utils::stripFormatting($data);
 		fwrite($this->stdout->socket, "< $data\n");
 	}
 
-	public function onDataSent($data)
+	public function onDataSent($data, $connection)
 	{
-		fwrite($this->stdout->socket, "> $data");
+		$data = Aki\Irc\Utils::stripFormatting($data);
+		fwrite($this->stdout->socket, "> $data\n");
 	}
 }

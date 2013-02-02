@@ -24,7 +24,7 @@ class Stdin extends Nette\Object
 	public function __construct()
 	{
 		$this->socket = STDIN;
-		stream_set_blocking($this->socket, FALSE);
+		stream_set_blocking($this->socket, 0);
 	}
 
 

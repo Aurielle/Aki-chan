@@ -24,7 +24,7 @@ class IrcSocket extends Nette\Object
 	public function __construct(Aki\Irc\Network $network)
 	{
 		$this->socket = fsockopen($network->server, $network->port);
-		stream_set_blocking($this->socket, FALSE);
+		stream_set_blocking($this->socket, 0);
 	}
 
 

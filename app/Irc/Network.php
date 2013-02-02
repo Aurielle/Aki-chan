@@ -43,12 +43,18 @@ class Network extends Nette\Object
 	protected $channels;
 
 
+	/** @var array */
+	protected $setup;
 
-	public function __construct(array $options)
+
+
+	public function __construct(array $network, array $setup)
 	{
-		foreach ($options as $key => $value) {
+		foreach ($network as $key => $value) {
 			$this->$key = $value;
 		}
+
+		$this->setup = (object) $setup;
 	}
 
 
@@ -90,5 +96,10 @@ class Network extends Nette\Object
 	public function getChannels()
 	{
 		return $this->channels;
+	}
+
+	public function getSetup()
+	{
+		return $this->setup;
 	}
 }

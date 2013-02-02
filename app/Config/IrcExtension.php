@@ -25,15 +25,23 @@ class IrcExtension extends Nette\Config\CompilerExtension
 			'port' => 6667,
 			'nick' => 'AkichanBot',
 			'password' => NULL,
-			'alternativeNicks' => array(
-				'%s`',
-				'%s_',
-				'%s|',
-			),
+			'alternativeNicks' => array(),
 			'ident' => NULL,
 			'user' => NULL,
 			'channels' => array(),
 		),
+
+		'setup' => array(
+			'nickserv' => 'NickServ',
+			'chanserv' => 'ChanServ',
+			'ghostDelay' => 60,
+		),
+	);
+
+	public $alternativeNicks = array(
+		'%s`',
+		'%s_',
+		'%s|',
 	);
 
 
@@ -65,6 +73,10 @@ class IrcExtension extends Nette\Config\CompilerExtension
 		$network['password'] = empty($network['password']) ? NULL : (string) $network['password'];
 
 		// Alternative nicks
+		if (empty($network['alternativeNicks'])) {
+			$network['alternativeNicks'] = $this->alternativeNicks;
+		}
+
 		$network['alternativeNicks'] = array_unique((array) $network['alternativeNicks']);
 		foreach ($network['alternativeNicks'] as &$value) {
 			$value = sprintf($value, $network['nick']);
@@ -98,7 +110,13 @@ class IrcExtension extends Nette\Config\CompilerExtension
 			$channel = '#' . ltrim($channel, '#');
 		}
 
+
+		// Setup options
+		$setup = $config['setup'];
+
+
+
 		$container->addDefinition($this->prefix('network'))
-			->setClass('Aki\Irc\Network', array($network));
+			->setClass('Aki\Irc\Network', array($network, $setup));
 	}
 }
