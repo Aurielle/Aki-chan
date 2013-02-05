@@ -232,7 +232,7 @@ class Bot extends Nette\Object
 
 		// Not sure here, all responses should have more than one word
 		// Again, not checked with RFC
-		$tmp = explode(' ', $data); $_this = $this;
+		$tmp = explode(' ', $data);
 
 		// Numeric responses (@see Aki\Irc\ServerCodes for some of response codes)
 		if (is_numeric($tmp[1])) {
@@ -259,9 +259,7 @@ class Bot extends Nette\Object
 				case ServerCodes::SPAM:
 					$this->status('~ Received end of MOTD');
 					$this->eventLoop->addTimer(0.8, callback($this, 'identify'));
-					$this->eventLoop->addTimer(5, function() use($_this) {
-						$_this->send('JOIN #fairytail');
-					});
+					$this->eventLoop->addPeriodicTimer(2, callback($this, 'handleJoinChannels'));
 					//$this->connecting = FALSE; // CHANGE!
 					break;
 
@@ -281,7 +279,19 @@ class Bot extends Nette\Object
 
 		// User or channel mode change
 		} elseif ($tmp[1] === 'MODE') {
-			$this->status(sprintf('~ Setting mode %s for %s', ltrim($tmp[3], ':'), $tmp[2]));
+			if ($tmp[2] === $this->nick) {
+				$this->status(sprintf('~ Mode change [%2$s] for %1$s', $tmp[2], ltrim($tmp[3], ':')));
+
+			} else {
+				$matches = Nette\Utils\Strings::match($data, '~\:(?P<nick>[^!]+)\!(?P<hostname>[^ ]+) MODE (?P<channel>#[^ ]+) (?P<mode>(?P<mode1>\+|\-)(?P<mode2>[^ ]+)) ?(?P<users>.*)~i');
+
+				if ($matches['users']) {
+					$this->status(sprintf('~ Mode change for %2$s [%3$s: %4$s] by %1$s', $matches['nick'], $matches['channel'], $matches['mode'], $matches['users']));
+
+				} else {
+					$this->status(sprintf('~ Mode change for %2$s [%3$s] by %1$s', $matches['nick'], $matches['channel'], $matches['mode']));
+				}
+			}
 		}
 	}
 
@@ -420,6 +430,7 @@ class Bot extends Nette\Object
 		// Registered nick, identified by NickServ
 		if (stripos($msg, 'now recognized') !== FALSE ||
 			stripos($msg, 'already identified') !== FALSE ||
+			stripos($msg, 'already logged in') !== FALSE ||
 			stripos($msg, 'password accepted') !== FALSE ||
 			stripos($msg, 'now identified') !== FALSE) {
 
@@ -448,6 +459,36 @@ class Bot extends Nette\Object
 	protected function chanservNotice($data, $connection)
 	{
 
+	}
+
+
+
+	public function handleJoinChannels($timer, React\EventLoop\LoopInterface $loop)
+	{
+		if (!$this->isConnecting()) {
+			$loop->cancelTimer($timer);
+			return;
+		}
+
+		// waiting for identification
+		if ($this->network->password && $this->network->setup->nickserv && !$this->isIdentified()) {
+			return;
+
+		// else just join
+		} else {
+			$loop->cancelTimer($timer);
+			$channels = $this->network->channels;
+
+			foreach ($channels as $channel) {
+				$this->joinChannel('#' . ltrim($channel, '#'));
+			}
+		}
+	}
+
+
+	public function joinChannel($channel)
+	{
+		$this->send('JOIN ' . $channel);
 	}
 
 
