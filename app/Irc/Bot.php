@@ -232,7 +232,7 @@ class Bot extends Nette\Object
 
 		// Not sure here, all responses should have more than one word
 		// Again, not checked with RFC
-		$tmp = explode(' ', $data);
+		$tmp = explode(' ', $data); $_this = $this;
 
 		// Numeric responses (@see Aki\Irc\ServerCodes for some of response codes)
 		if (is_numeric($tmp[1])) {
@@ -259,6 +259,9 @@ class Bot extends Nette\Object
 				case ServerCodes::SPAM:
 					$this->status('~ Received end of MOTD');
 					$this->eventLoop->addTimer(0.8, callback($this, 'identify'));
+					$this->eventLoop->addTimer(5, function() use($_this) {
+						$_this->send('JOIN #fairytail');
+					});
 					//$this->connecting = FALSE; // CHANGE!
 					break;
 

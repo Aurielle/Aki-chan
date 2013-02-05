@@ -36,9 +36,9 @@ common:
 			class: Aki\Commands\PingPong
 			tags: [run]
 
-		#ctcpResponse:
-		#	class: Aki\Commands\CtcpResponse
-		#	tags: [eventSubscriber]
+		ctcpResponse:
+			class: Aki\Commands\CtcpResponse
+			tags: [run]
 
 production < common:
 
