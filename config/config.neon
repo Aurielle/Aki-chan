@@ -32,9 +32,9 @@ common:
 			class: Aki\Commands\CliLogger
 			tags: [run]
 
-		#pingPong:
-		#	class: Aki\Commands\PingPong
-		#	tags: [eventSubscriber]
+		pingPong:
+			class: Aki\Commands\PingPong
+			tags: [run]
 
 		#ctcpResponse:
 		#	class: Aki\Commands\CtcpResponse

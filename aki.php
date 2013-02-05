@@ -45,6 +45,7 @@ $configurator->createRobotLoader()
 	->register();
 
 // Network settings
+// Redundant? This should be always enabled in CLI
 if (!isset($argc)) {
 	throw new Nette\NotSupportedException("PHP setting 'register_argc_argv' must be enabled in order to run Aki.");
 

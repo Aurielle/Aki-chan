@@ -44,6 +44,8 @@ class IrcExtension extends Nette\Config\CompilerExtension
 		'%s|',
 	);
 
+	public $disallowedInIdent = array("\x00", "\r", "\n", ' ', '@');
+
 
 
 	/**
@@ -85,6 +87,13 @@ class IrcExtension extends Nette\Config\CompilerExtension
 		// Ident
 		if (empty($network['ident'])) {
 			$network['ident'] = Aki\Aki::NAME;
+
+		} else {
+			foreach ($this->disallowedInIdent as $disallowed) {
+				if (strpos($network['ident'], $disallowed) !== FALSE) {
+					throw new Nette\NotSupportedException('Ident contains illegal characters (disallowed: \x00, \r, \n, " " (space), @).');
+				}
+			}
 		}
 
 		$network['ident'] = (string) $network['ident'];
