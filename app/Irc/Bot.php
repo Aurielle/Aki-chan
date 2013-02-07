@@ -61,7 +61,7 @@ class Bot extends Nette\Object
 	/** @var int */
 	protected $sentGhost;
 
-	/** @var mixed */
+	/** @var array */
 	private $buffer;
 
 
@@ -176,8 +176,21 @@ class Bot extends Nette\Object
 	 */
 	public function buffer($rawData, $callback, $params = array())
 	{
-		if (!is_callable($callback)) {
-			throw new Nette\InvalidArgumentException('Buffer callback is not callable.');
+		if (!$callback instanceof Nette\Callback) {
+			$callback = Nette\Callback::create($callback);
+		}
+
+		// Determine hash of the callback to distinguish different calls
+		$cb = $callback->getNative();
+		if ($cb instanceof \Closure) {
+			// spl_object_hash($callback) results in same hashes for different callbacks
+			$hash = spl_object_hash($cb);
+		} elseif (is_string($cb) && $cb[0] === "\0") {
+			// lambda functions
+			$hash = md5($cb);
+		} else {
+			is_callable($cb, TRUE, $textual);
+			$hash = md5($textual);
 		}
 
 		// Split raw data into pieces of each line and clean them from control characters
@@ -187,9 +200,9 @@ class Bot extends Nette\Object
 		$data = explode("\n", $rawData);
 
 		// If something's in buffer, use it and clean the buffer
-		if ($this->buffer) {
-			$first = $this->buffer . array_shift($data);
-			$this->buffer = NULL;
+		if (isset($this->buffer[$hash])) {
+			$first = $this->buffer[$hash] . array_shift($data);
+			$this->buffer[$hash] = NULL;
 			$data = array_merge(array($first), $data);
 		}
 
@@ -204,7 +217,7 @@ class Bot extends Nette\Object
 		// put it into the buffer and stop it from processing.
 		// Else merge the array back and proceed normally.
 		if (!Nette\Utils\Strings::endsWith($last, "\xFF")) {
-			$this->buffer = $last;
+			$this->buffer[$hash] = $last;
 
 		} else {
 			$data = array_merge($data, array($last));
@@ -345,7 +358,7 @@ class Bot extends Nette\Object
 
 	/**
 	 * Ghosts a bot's nick that is no longer connected.
-	 * @return [type] [description]
+	 * @return void
 	 */
 	public function ghost()
 	{
@@ -456,7 +469,7 @@ class Bot extends Nette\Object
 		}
 	}
 
-	protected function chanservNotice($data, $connection)
+	public function chanservNotice($data, $connection)
 	{
 
 	}
@@ -473,16 +486,18 @@ class Bot extends Nette\Object
 		// waiting for identification
 		if ($this->network->password && $this->network->setup->nickserv && !$this->isIdentified()) {
 			return;
-
-		// else just join
-		} else {
-			$loop->cancelTimer($timer);
-			$channels = $this->network->channels;
-
-			foreach ($channels as $channel) {
-				$this->joinChannel('#' . ltrim($channel, '#'));
-			}
 		}
+
+		// no password provided || identification done, proceed with joining
+		$loop->cancelTimer($timer);
+		$channels = $this->network->channels;
+
+		foreach ($channels as $channel) {
+			$this->joinChannel('#' . ltrim($channel, '#'));
+		}
+
+		// Stop connecting phase
+		$this->connecting = FALSE;
 	}
 
 
