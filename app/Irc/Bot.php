@@ -20,6 +20,9 @@ use Aki, Nette, React;
  */
 class Bot extends Nette\Object
 {
+	/** Key for modes array */
+	const MODES_BOT = 'bot';
+
 	/** @var Aki\Irc\Network */
 	protected $network;
 
@@ -41,6 +44,9 @@ class Bot extends Nette\Object
 	public $onDataSent = array();
 	public $onDisconnect = array();
 
+	public $onUserModeChange = array();
+	public $onChannelBotModeChange = array();
+
 	/** @var bool */
 	protected $connecting = FALSE;
 
@@ -56,6 +62,12 @@ class Bot extends Nette\Object
 
 	/** @var string */
 	protected $server;
+
+	/** @var array */
+	protected $joinedChannels = array();
+
+	/** @var array */
+	protected $modes = array();
 
 
 	/** @var int */
@@ -111,6 +123,11 @@ class Bot extends Nette\Object
 		// Internal events
 		$this->onDataReceived[] = callback($this, 'handleConnect');
 		$this->onDataReceived[] = callback($this, 'watchNick');
+		$this->onDataReceived[] = callback($this, 'watchModes');
+		$this->onDataReceived[] = callback($this, 'watchChannels');
+
+		// Initialize modes array
+		$this->modes[static::MODES_BOT] = array();
 
 		$this->connecting = TRUE;
 		$this->eventLoop->run();
@@ -247,7 +264,7 @@ class Bot extends Nette\Object
 		// Again, not checked with RFC
 		$tmp = explode(' ', $data);
 
-		// Numeric responses (@see Aki\Irc\ServerCodes for some of response codes)
+		// Numeric responses (@see Aki\Irc\ServerCodes for some response codes)
 		if (is_numeric($tmp[1])) {
 			switch ((int) $tmp[1]) {
 				// Server welcome message
@@ -273,7 +290,6 @@ class Bot extends Nette\Object
 					$this->status('~ Received end of MOTD');
 					$this->eventLoop->addTimer(0.8, callback($this, 'identify'));
 					$this->eventLoop->addPeriodicTimer(2, callback($this, 'handleJoinChannels'));
-					//$this->connecting = FALSE; // CHANGE!
 					break;
 
 				// Unhandled response
@@ -288,22 +304,6 @@ class Bot extends Nette\Object
 
 			} elseif (Nette\Utils\Strings::startsWith(ltrim($tmp[0], ':'), $this->network->setup->chanserv)) {
 				$this->chanservNotice($data, $conn);
-			}
-
-		// User or channel mode change
-		} elseif ($tmp[1] === 'MODE') {
-			if ($tmp[2] === $this->nick) {
-				$this->status(sprintf('~ Mode change [%2$s] for %1$s', $tmp[2], ltrim($tmp[3], ':')));
-
-			} else {
-				$matches = Nette\Utils\Strings::match($data, '~\:(?P<nick>[^!]+)\!(?P<hostname>[^ ]+) MODE (?P<channel>#[^ ]+) (?P<mode>(?P<mode1>\+|\-)(?P<mode2>[^ ]+)) ?(?P<users>.*)~i');
-
-				if ($matches['users']) {
-					$this->status(sprintf('~ Mode change for %2$s [%3$s: %4$s] by %1$s', $matches['nick'], $matches['channel'], $matches['mode'], $matches['users']));
-
-				} else {
-					$this->status(sprintf('~ Mode change for %2$s [%3$s] by %1$s', $matches['nick'], $matches['channel'], $matches['mode']));
-				}
 			}
 		}
 	}
@@ -419,6 +419,110 @@ class Bot extends Nette\Object
 
 
 	/**
+	 * Watches for mode changes
+	 * @todo unset array on channel leave/kick
+	 *
+	 * @param  string $data
+	 * @param  Aki\Irc\Connection $connection
+	 * @return void
+	 */
+	public function watchModes($data, Connection $connection)
+	{
+		$tmp = explode(' ', $data);
+		if ($tmp[1] !== 'MODE') {
+			return;
+		}
+
+		// User mode change
+		if ($tmp[2] === $this->nick) {
+			$_this = $this;
+			$modes = ltrim($tmp[3], ':');
+			$this->status(sprintf('~ Mode change [%2$s] for %1$s', $tmp[2], $modes));
+
+			if (Nette\Utils\Strings::startsWith($modes, '+')) {
+				$added = str_split(ltrim($modes, '+'));
+				$this->modes[static::MODES_BOT] = array_merge($this->modes[static::MODES_BOT], $added);
+				array_walk($added, function($value) use($_this) {
+					$_this->onUserModeChange($value);
+				});
+
+			} else {
+				$toUnset = str_split(ltrim($modes, '-'));
+				foreach ($toUnset as $mode) {
+					$key = array_search($mode, $this->modes[static::MODES_BOT]);
+					unset($this->modes[static::MODES_BOT][$key]);
+				}
+
+				array_walk($toUnset, function($value) use($_this) {
+					$_this->onUserModeChange($value, TRUE);
+				});
+			}
+
+		// Channel mode change
+		} else {
+			$matches = Nette\Utils\Strings::match($data, '~\:(?P<nick>[^!]+)\!(?P<hostname>[^ ]+) MODE (?P<channel>#[^ ]+) (?P<mode>(?P<mode1>\+|\-)(?P<mode2>[^ ]+)) ?(?P<users>.*)~i');
+
+			if ($matches['users']) {
+				$this->status(sprintf('~ Mode change for %2$s [%3$s: %4$s] by %1$s', $matches['nick'], $matches['channel'], $matches['mode'], $matches['users']));
+
+				// Indexes in modes correspond to order in list of users affected
+				if (strpos($matches['users'], $this->nick) !== FALSE) {
+					$modes = str_split($matches['mode2']);
+					foreach (explode(' ', $matches['users']) as $key => $user) {
+						if ($user !== $this->nick) {
+							continue;
+						}
+
+						if ($matches['mode1'] === '+') {
+							$this->modes[$matches['channel']] = array_merge($this->modes[$matches['channel']], array($modes[$key]));
+							$this->onChannelBotModeChange($matches['channel'], $modes[$key]);
+
+						} else {
+							$mode = $modes[$key];
+							$key2 = array_search($mode, $this->modes[$matches['channel']]);
+							unset($this->modes[$matches['channel']][$key2]);
+							$this->onChannelBotModeChange($matches['channel'], $mode, TRUE);
+						}
+					}
+
+					$this->modes[$matches['channel']] = array_unique($this->modes[$matches['channel']]);
+				}
+
+			} else {
+				$this->status(sprintf('~ Mode change for %2$s [%3$s] by %1$s', $matches['nick'], $matches['channel'], $matches['mode']));
+			}
+		}
+	}
+
+
+
+	/**
+	 * Watches for channel joins/parts/kicks/bans
+	 * @param  string $data
+	 * @param  Aki\Irc\Connection $connection
+	 * @return void
+	 */
+	public function watchChannels($data, Connection $connection)
+	{
+		$tmp = explode(' ', $data);
+		if ($tmp[1] === 'JOIN') {
+			$channel = ltrim($tmp[2], ':');
+			$this->joinedChannels[$channel] = TRUE;
+			$this->modes[$channel] = array();
+
+			$this->status(sprintf('~ Joined channel %s', $channel));
+
+		} elseif ($tmp[1] === 'KICK' && $tmp[3] === $this->nick) {
+			$channel = ltrim($tmp[2], ':');
+			unset($this->joinedChannels[$channel]);
+			unset($this->modes[$channel]);
+
+			$this->status(sprintf('~ Kicked from channel %s by %s (reason: %s)', $channel, substr($tmp[0], 1, strpos($tmp[0], '!') - 1), ltrim($tmp[4], ':')));
+		}
+	}
+
+
+	/**
 	 * Handles replies to various messages from NickServ.
 	 * @param  string $data
 	 * @param  Aki\Irc\Connection $connection
@@ -469,7 +573,7 @@ class Bot extends Nette\Object
 		}
 	}
 
-	public function chanservNotice($data, $connection)
+	protected function chanservNotice($data, $connection)
 	{
 
 	}
@@ -556,5 +660,29 @@ class Bot extends Nette\Object
 	public function getUniqueId()
 	{
 		return $this->uniqueId;
+	}
+
+
+	/**
+	 * Returns bot's modes on server or particular channel joined on.
+	 * @param NULL|bool|string $key
+	 * @param bool $all
+	 * @return array
+	 */
+	public function getModes($key = NULL)
+	{
+		if ($key === TRUE) {
+			return $this->modes;
+		}
+
+		if (is_string($key) && array_key_exists($key, $this->modes)) {
+			return $this->modes[$key];
+
+		} elseif (is_string($key)) {
+			throw new Nette\InvalidArgumentException("Bot is not on channel $key.");
+
+		} else {
+			return $this->modes[static::MODES_BOT];
+		}
 	}
 }
