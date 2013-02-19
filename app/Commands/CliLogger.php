@@ -23,18 +23,14 @@ class CliLogger extends Nette\Object
 	/** @var Aki\Irc\Bot */
 	protected $bot;
 
-	/** @var Aki\Stream\Stdin */
-	protected $stdin;
-
 	/** @var Aki\Stream\Stdout */
 	protected $stdout;
 
 
 
-	public function __construct(Aki\Irc\Bot $bot, Aki\Stream\Stdin $stdin, Aki\Stream\Stdout $stdout)
+	public function __construct(Aki\Irc\Bot $bot, Aki\Stream\Stdout $stdout)
 	{
 		$this->bot = $bot;
-		$this->stdin = $stdin;
 		$this->stdout = $stdout;
 
 		$this->bot->onDataReceived[] = callback($this, 'onDataReceived');
