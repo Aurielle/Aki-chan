@@ -504,7 +504,7 @@ class Bot extends Nette\Object
 	 */
 	public function watchChannels($data, Connection $connection)
 	{
-		$tmp = explode(' ', $data);
+		$tmp = explode(' ', $data, 5);
 		if ($tmp[1] === 'JOIN') {
 			$channel = ltrim($tmp[2], ':');
 			$this->joinedChannels[$channel] = TRUE;
