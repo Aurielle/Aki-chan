@@ -185,7 +185,6 @@ class Bot extends Nette\Object
 
 	/**
 	 * Serves lines data to callback function one by one
-	 * Intended to be called only once!!
 	 * @param  string $rawData
 	 * @param  callable $callback
 	 * @param  array  $params
@@ -324,7 +323,7 @@ class Bot extends Nette\Object
 
 		// Alternative nicks are exhausted, quit
 		// onDisconnect will get called automatically (end of stream)
-		if($nicks === array()) {
+		if ($nicks === array()) {
 			$this->send('QUIT :No alternative nicks available.');
 			$this->status('! No more alternative nicks available');
 			return;
