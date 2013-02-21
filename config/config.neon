@@ -8,9 +8,6 @@ common:
 	php:
 		date.timezone: Europe/Prague
 
-	parameters:
-		autoRejoinChannels: []
-
 	services:
 		irc.bot:
 			class: Aki\Irc\Bot
@@ -31,6 +28,10 @@ common:
 		stdout:
 			class: Aki\Stream\Stdout
 
+		curlSender:
+			class: Kdyby\Curl\CurlSender
+
+
 		cliLogger:
 			class: Aki\Commands\CliLogger
 			tags: [run]
@@ -48,6 +49,12 @@ common:
 			tags: [run]
 			setup:
 				- setChannels(%autoRejoinChannels%)
+
+		parseLinks:
+			class: Aki\Commands\ParseLinks
+			tags: [run]
+			setup:
+				- setLimit(%maxLinksPerMessage%)
 
 production < common:
 

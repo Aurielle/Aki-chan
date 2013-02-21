@@ -11,3 +11,13 @@ irc:
 
 		channels:
 			- fairytail
+			- sunsub
+
+	setup:
+		nickserv: NickServ
+		chanserv: ChanServ
+		ghostDelay: 60
+
+parameters:
+	autoRejoinChannels: []
+	maxLinksPerMessage: 1

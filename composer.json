@@ -10,16 +10,10 @@
 			"homepage": "http://aurielle.cz"
 		}
 	],
-	"repositories": [
-		{
-			"type": "vcs",
-			"url": "https://github.com/Aurielle/CurlExtension"
-		}
-	],
 	"require": {
 		"php": ">=5.3.2",
-		"react/react": "dev-master",
+		"react/react": "0.2.*",
 		"nette/nette": "2.0.*",
-		"kdyby/curl-extension": "dev-master"
+		"kdyby/curl": "dev-master"
 	}
 }
