@@ -196,8 +196,7 @@ class ParseLinks extends Nette\Object
 			return FALSE;
 		}
 
-		$dom = $res->getDocument();
-		$titles = $dom->getElementsByTagName('title');
-		return sprintf('[Web] %s', $titles->item(0)->nodeValue);
+		$title = Nette\Utils\Strings::match($res->getResponse(), '#\<title[^>]*\>(.+)\<\/title\>#i');
+		return sprintf('[Web] %s', html_entity_decode($title[1], ENT_QUOTES));	// title can contain any entity
 	}
 }
