@@ -32,8 +32,8 @@ common:
 			class: Kdyby\Curl\CurlSender
 
 
-		cliLogger:
-			class: Aki\Commands\CliLogger
+		communicationLogger:
+			class: Aki\Commands\CommunicationLogger
 			tags: [run]
 
 		pingPong:

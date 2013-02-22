@@ -18,7 +18,7 @@ use Aki, Nette, React;
 /**
  * Logs all data communication to the server console.
  */
-class CliLogger extends Nette\Object
+class CommunicationLogger extends Nette\Object
 {
 	/** @var Aki\Irc\Bot */
 	protected $bot;
