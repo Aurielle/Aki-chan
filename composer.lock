@@ -240,12 +240,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Kdyby/Curl.git",
-                "reference": "ee4b2e8780de949bfd4f67fb7dddb89b67981083"
+                "reference": "cdefd9157af825023ce34225441f73bcb86dc8f9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Kdyby/Curl/zipball/ee4b2e8780de949bfd4f67fb7dddb89b67981083",
-                "reference": "ee4b2e8780de949bfd4f67fb7dddb89b67981083",
+                "url": "https://api.github.com/repos/Kdyby/Curl/zipball/cdefd9157af825023ce34225441f73bcb86dc8f9",
+                "reference": "cdefd9157af825023ce34225441f73bcb86dc8f9",
                 "shasum": ""
             },
             "require": {
@@ -283,7 +283,7 @@
                 "http",
                 "nette"
             ],
-            "time": "2013-02-12 02:28:21"
+            "time": "2013-02-21 17:50:19"
         },
         {
             "name": "nette/nette",
