@@ -32,11 +32,14 @@ class Bot extends Nette\Object
 	/** @var React\Stream\Stream */
 	protected $connection;
 
-	/** @var React\Stream\Stream */
+	/** @var Aki\Stream\Stdin */
 	protected $stdin;
 
-	/** @var React\Stream\Stream */
+	/** @var Aki\Stream\Stdout */
 	protected $stdout;
+
+	/** @var Aki\Irc\Logger */
+	protected $logger;
 
 
 	/** Events */
@@ -78,13 +81,14 @@ class Bot extends Nette\Object
 
 
 
-	public function __construct(Network $network, React\EventLoop\LoopInterface $eventLoop, Connection $connection, Aki\Stream\Stdin $stdin, Aki\Stream\Stdout $stdout)
+	public function __construct(Network $network, React\EventLoop\LoopInterface $eventLoop, Connection $connection, Aki\Stream\Stdin $stdin, Aki\Stream\Stdout $stdout, Aki\Irc\Logger $logger)
 	{
 		$this->network = $network;
 		$this->eventLoop = $eventLoop;
 		$this->connection = $connection;
 		$this->stdin = $stdin;
 		$this->stdout = $stdout;
+		$this->logger = $logger;
 
 		$_this = $this;
 		/*$eventLoop->addReadStream($stdin->socket, function($stream) use($_this) {
@@ -92,8 +96,8 @@ class Bot extends Nette\Object
 		});*/
 
 		// Console information about successful connection
-		$connection->once('data', function() use ($_this, $network) {
-			$_this->status(sprintf('~ Connected to %s on port %d', $network->server, $network->port));
+		$connection->once('data', function() use ($logger, $network) {
+			$logger->logMessage(ILogger::INFO, 'Connected to %s on port %d', $network->server, $network->port);
 		});
 
 		// Handle incoming data with our buffer
@@ -102,12 +106,18 @@ class Bot extends Nette\Object
 		});
 
 		// Graceful shutdown
-		$connection->on('close', function($conn) use($_this, $eventLoop, $stdin) {
+		$connection->on('close', function($conn) use($_this, $eventLoop, $stdin, $logger) {
 			//$eventLoop->removeReadStream($stdin->socket);
 			$_this->onDisconnect($_this, $conn);
-			$_this->status('! Connection closed, Aki is aborting.');
+			$logger->logMessage($logger::WARNING, 'Connection closed, aborting.');
 			exit;
 		});
+
+		// Internal events
+		$this->onDataReceived[] = callback($this, 'handleConnect');
+		$this->onDataReceived[] = callback($this, 'watchNick');
+		$this->onDataReceived[] = callback($this, 'watchModes');
+		$this->onDataReceived[] = callback($this, 'watchChannels');
 
 		// Identifying with the server and other stuff
 		$eventLoop->addTimer(0.3, callback($this, 'connect'));
@@ -120,12 +130,6 @@ class Bot extends Nette\Object
 	 */
 	public function run()
 	{
-		// Internal events
-		$this->onDataReceived[] = callback($this, 'handleConnect');
-		$this->onDataReceived[] = callback($this, 'watchNick');
-		$this->onDataReceived[] = callback($this, 'watchModes');
-		$this->onDataReceived[] = callback($this, 'watchChannels');
-
 		// Initialize modes array
 		$this->modes[static::MODES_BOT] = array();
 
@@ -151,20 +155,6 @@ class Bot extends Nette\Object
 
 
 	/**
-	 * Prints information to the console.
-	 * @todo Implement some normal logger with severity.
-	 * @todo use PHP_EOL?
-	 * @param  string $text
-	 * @return Bot Provides a fluent interface.
-	 */
-	public function status($text)
-	{
-		fwrite($this->stdout->socket, $text . "\n");
-		return $this;
-	}
-
-
-	/**
 	 * Sends identification to the server.
 	 * @param  string $timer
 	 * @param  React\EventLoop\LoopInterface $loop
@@ -179,7 +169,7 @@ class Bot extends Nette\Object
 		$this->nick = $this->network->nick;
 		$this->send(sprintf('USER %s aurielle.cz %s :%s', $this->network->ident, $this->nick, $this->network->user));
 		$this->send(sprintf('NICK %s', $this->nick));
-		$this->status(sprintf('~ Logging in as %s...', $this->nick));
+		$this->logger->logMessage(ILogger::INFO, 'Logging in as %s...', $this->nick);
 	}
 
 
@@ -268,7 +258,7 @@ class Bot extends Nette\Object
 			switch ((int) $tmp[1]) {
 				// Server welcome message
 				case ServerCodes::WELCOME:
-					$this->status('~ Received server welcome message');
+					$this->logger->logMessage(ILogger::INFO, 'Received server welcome message');
 					break;
 
 				// Bot's nick is already on the server, use a different one
@@ -278,15 +268,16 @@ class Bot extends Nette\Object
 
 				// Save our unique ID (what is it for?)
 				case ServerCodes::UNIQUE_ID:
+					dump($tmp);
 					$this->uniqueId = $tmp[3];
-					$this->status('~ Unique ID saved');
+					$this->logger->logMessage(ILogger::INFO, 'Unique ID (%s) saved', $tmp[3]);
 					break;
 
 				// MOTD ends, begin identifying phase
 				case ServerCodes::MOTD_END:
 				case ServerCodes::NO_MOTD:
 				case ServerCodes::SPAM:
-					$this->status('~ Received end of MOTD');
+					$this->logger->logMessage(ILogger::INFO, 'Received end of MOTD');
 					$this->eventLoop->addTimer(0.8, callback($this, 'identify'));
 					$this->eventLoop->addPeriodicTimer(2, callback($this, 'handleJoinChannels'));
 					break;
@@ -325,7 +316,7 @@ class Bot extends Nette\Object
 		// onDisconnect will get called automatically (end of stream)
 		if ($nicks === array()) {
 			$this->send('QUIT :No alternative nicks available.');
-			$this->status('! No more alternative nicks available');
+			$this->logger->logMessage(ILogger::ERROR, 'No more alternative nicks available');
 			return;
 		}
 
@@ -333,7 +324,7 @@ class Bot extends Nette\Object
 		$newNick = array_shift($nicks);
 		$this->nick = $newNick;
 		$this->send(sprintf('NICK %s', $newNick));
-		$this->status(sprintf('~ Using alternative nick %s', $newNick));
+		$this->logger->logMessage(ILogger::NOTICE, 'Using alternative nick %s', $newNick);
 	}
 
 
@@ -346,7 +337,7 @@ class Bot extends Nette\Object
 		if ($this->network->password && $this->network->setup->nickserv) {
 			if ($this->nick === $this->network->nick) {
 				$this->send(sprintf('PRIVMSG %s :IDENTIFY %s', $this->network->setup->nickserv, $this->network->password));
-				$this->status('~ Identifying with NickServ...');
+				$this->logger->logMessage(ILogger::INFO, 'Identifying with NickServ...');
 
 			} else {
 				$this->ghost();
@@ -363,11 +354,11 @@ class Bot extends Nette\Object
 	{
 		if ($this->network->password && $this->network->setup->nickserv && $this->nick !== $this->network->nick) {
 			if ($this->sentGhost && time() < ($this->sentGhost + $this->network->setup->ghostDelay)) {
-				$this->status(sprintf('! Ghost attempted too early, allowed only once every %d seconds.', $this->network->setup->ghostDelay));
+				$this->logger->logMessage(ILogger::WARNING, 'Ghost attempted too early, allowed only once every %d seconds.', $this->network->setup->ghostDelay);
 			}
 
 			$this->send(sprintf('PRIVMSG %s :GHOST %s %s', $this->network->setup->nickserv, $this->network->nick, $this->network->password));
-			$this->status(sprintf('~ Sending Ghost (current nick: %s; ghosting: %s)', $this->nick, $this->network->nick));
+			$this->logger->logMessage(ILogger::NOTICE, '~ Sending Ghost (current nick: %s; ghosting: %s)', $this->nick, $this->network->nick);
 			$this->sentGhost = time();
 		}
 	}
@@ -405,14 +396,14 @@ class Bot extends Nette\Object
 		$server = ltrim($tmp[0], ':');
 		if ($this->server !== $server) {
 			$this->server = $server;
-			$this->status(sprintf('~ Updating server to %s', $server));
+			$this->logger->logMessage(ILogger::INFO, 'Updating server to %s', $server);
 		}
 
 		// Store current nick to our variable
 		$nick = $tmp[2];
 		if ($this->nick !== $nick) {
 			$this->nick = $nick;
-			$this->status(sprintf('~ Updating nick to %s', $nick));
+			$this->logger->logMessage(ILogger::INFO, 'Updating nick to %s', $nick);
 		}
 	}
 
@@ -436,7 +427,7 @@ class Bot extends Nette\Object
 		if ($tmp[2] === $this->nick) {
 			$_this = $this;
 			$modes = ltrim($tmp[3], ':');
-			$this->status(sprintf('~ Mode change [%2$s] for %1$s', $tmp[2], $modes));
+			$this->logger->logMessage(ILogger::DEBUG, 'Mode change [%2$s] for %1$s', $tmp[2], $modes);
 
 			if (Nette\Utils\Strings::startsWith($modes, '+')) {
 				$added = str_split(ltrim($modes, '+'));
@@ -462,7 +453,7 @@ class Bot extends Nette\Object
 			$matches = Nette\Utils\Strings::match($data, '~\:(?P<nick>[^!]+)\!(?P<hostname>[^ ]+) MODE (?P<channel>#[^ ]+) (?P<mode>(?P<mode1>\+|\-)(?P<mode2>[^ ]+)) ?(?P<users>.*)~i');
 
 			if ($matches['users']) {
-				$this->status(sprintf('~ Mode change for %2$s [%3$s: %4$s] by %1$s', $matches['nick'], $matches['channel'], $matches['mode'], $matches['users']));
+				$this->logger->logMessage(ILogger::DEBUG, 'Mode change for %2$s [%3$s: %4$s] by %1$s', $matches['nick'], $matches['channel'], $matches['mode'], $matches['users']);
 
 				// Indexes in modes correspond to order in list of users affected
 				if (strpos($matches['users'], $this->nick) !== FALSE) {
@@ -488,7 +479,7 @@ class Bot extends Nette\Object
 				}
 
 			} else {
-				$this->status(sprintf('~ Mode change for %2$s [%3$s] by %1$s', $matches['nick'], $matches['channel'], $matches['mode']));
+				$this->logger->logMessage(ILogger::DEBUG, 'Mode change for %2$s [%3$s] by %1$s', $matches['nick'], $matches['channel'], $matches['mode']);
 			}
 		}
 	}
@@ -509,14 +500,14 @@ class Bot extends Nette\Object
 			$this->joinedChannels[$channel] = TRUE;
 			$this->modes[$channel] = array();
 
-			$this->status(sprintf('~ Joined channel %s', $channel));
+			$this->logger->logMessage(ILogger::INFO, 'Joined channel %s', $channel);
 
 		} elseif ($tmp[1] === 'KICK' && $tmp[3] === $this->nick) {
 			$channel = ltrim($tmp[2], ':');
 			unset($this->joinedChannels[$channel]);
 			unset($this->modes[$channel]);
 
-			$this->status(sprintf('~ Kicked from channel %s by %s (reason: %s)', $channel, substr($tmp[0], 1, strpos($tmp[0], '!') - 1), ltrim($tmp[4], ':')));
+			$this->logger->logMessage(ILogger::WARNING, 'Kicked from channel %s by %s (reason: %s)', $channel, substr($tmp[0], 1, strpos($tmp[0], '!') - 1), ltrim($tmp[4], ':'));
 		}
 	}
 
@@ -535,12 +526,12 @@ class Bot extends Nette\Object
 
 		// Incorrect password for registered nick
 		if (stripos($msg, 'incorrect') !== FALSE || stripos($msg, 'denied') !== FALSE) {
-			$this->status('! Incorrect password passed for NickServ');
+			$this->logger->logMessage(ILogger::WARNING, 'Incorrect password passed for NickServ (nick: %s)', $this->nick);
 		}
 
 		// Password specified, but nick not registered
 		if (stripos($msg, 'is not registered') !== FALSE || stripos($msg, "isn't registered") !== FALSE) {
-			$this->status(sprintf('~ Current nick (%s) is not registered', $this->nick));
+			$this->logger->logMessage(ILogger::NOTICE, 'Current nick (%s) is not registered', $this->nick);
 		}
 
 		// Registered nick, identified by NickServ
@@ -551,12 +542,12 @@ class Bot extends Nette\Object
 			stripos($msg, 'now identified') !== FALSE) {
 
 			$this->identified = TRUE;
-			$this->status('~ Password accepted, Aki is recognized');
+			$this->logger->logMessage(ILogger::INFO, 'Password accepted, Aki is recognized');
 		}
 
 		// Ghost with your nick was killed message
 		if (stripos($msg, 'killed') !== FALSE && (strpos($msg, $this->network->nick) !== FALSE || stripos($msg, 'ghost') !== FALSE)) {
-			$this->status(sprintf('~ Ghost of nick %s has been killed', $this->network->nick));
+			$this->logger->logMessage(ILogger::NOTICE, '~ Ghost of nick %s has been killed', $this->network->nick);
 			$this->identified = FALSE;
 			$this->sentGhost = NULL;
 			$this->eventLoop->addTimer(1, callback($this, 'afterGhost'));
