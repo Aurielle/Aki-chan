@@ -17,12 +17,12 @@ use Aki, Nette;
 
 class ServerCodes extends Nette\Object
 {
-	const WELCOME = 001,
-		YOUR_HOST = 002,
-		CREATED = 003,
-		MY_INFO = 004,
-		BOUNCE = 005,
-		UNIQUE_ID = 042,
+	const WELCOME = 1,
+		YOUR_HOST = 2,
+		CREATED = 3,
+		MY_INFO = 4,
+		BOUNCE = 5,
+		UNIQUE_ID = 42,
 
 		STATSCON = 250,
 		LUSERCLIENT = 251,
