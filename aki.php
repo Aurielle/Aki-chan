@@ -11,6 +11,7 @@
 
 // Vendor libs
 require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/app/Config/Configurator.php';
 
 // CLI only
 if (PHP_SAPI !== 'cli') {
@@ -32,7 +33,7 @@ if (function_exists('pcntl_signal')) {
 
 
 // Configuration
-$configurator = new Nette\Config\Configurator();
+$configurator = new Aki\Config\Configurator();
 
 // Error visualization & logging
 $configurator->setDebugMode(TRUE);
@@ -66,8 +67,12 @@ if (!isset($argc)) {
 }
 
 // Configuration
-$configurator->addConfig(__DIR__ . '/config/config.neon');
+$configurator->addConfig(__DIR__ . '/config/config.neon', $configurator::NONE);
 $configurator->addConfig(__DIR__ . '/config/' . $network, $configurator::NONE);
+if ($configurator->isDebugMode()) {
+	$configurator->addConfig(__DIR__ . '/config/config.dev.neon', $configurator::NONE);
+}
+
 $configurator->onCompile[] = function($configurator, $compiler) {
 	$compiler->addExtension('irc', new Aki\Config\IrcExtension);
 };
