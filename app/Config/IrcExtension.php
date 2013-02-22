@@ -15,7 +15,6 @@ use Aki, Nette;
 
 
 
-
 class IrcExtension extends Nette\Config\CompilerExtension
 {
 	/** @var array */
