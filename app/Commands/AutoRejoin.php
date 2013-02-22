@@ -12,6 +12,7 @@
 namespace Aki\Commands;
 
 use Aki, Nette, React;
+use Aki\Irc\ILogger;
 
 
 
@@ -26,12 +27,15 @@ class AutoRejoin extends Nette\Object
 	/** @var Aki\Stream\Stdout */
 	protected $stdout;
 
+	/** @var Aki\Irc\Logger */
+	protected $logger;
+
 	/** @var array */
 	protected $channels = array();
 
 
 
-	public function __construct(Aki\Irc\Bot $bot, Aki\Stream\Stdout $stdout)
+	public function __construct(Aki\Irc\Bot $bot, Aki\Stream\Stdout $stdout, Aki\Irc\Logger $logger)
 	{
 		$this->bot = $bot;
 		$this->stdout = $stdout;
@@ -52,6 +56,7 @@ class AutoRejoin extends Nette\Object
 	{
 		if ($matches = Nette\Utils\Strings::match($data, '#^\:([^!]+)\![^ ]+ KICK ([^ ]+) ' . preg_quote($this->bot->getNick(), '#') . '#')) {
 			if (empty($this->channels) || in_array($matches[2], $this->channels)) {
+				$this->logger->logMessage(ILogger::NOTICE, 'Automatic rejoin enabled for %s, rejoining', $matches[2]);
 				$this->bot->joinChannel($matches[2]);
 			}
 		}
