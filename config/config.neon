@@ -7,6 +7,14 @@
 php:
 	date.timezone: Europe/Prague
 
+parameters:
+	twitter:
+		consumerKey:
+		consumerSecret:
+		token:
+		tokenSecret:
+
+
 services:
 	irc.bot:
 		class: Aki\Irc\Bot
@@ -59,3 +67,9 @@ services:
 		tags: [run]
 		setup:
 			- setLimit(%maxLinksPerMessage%)
+
+	twitter:
+		class: Aki\Twitter\Twitter(%twitter.consumerKey%, %twitter.consumerSecret%)
+		setup:
+			- setOAuthToken(%twitter.token%)
+			- setOAuthTokenSecret(%twitter.tokenSecret%)

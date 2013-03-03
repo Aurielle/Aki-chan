@@ -1,5 +1,5 @@
 {
-    "hash": "9f3f08eaa0778e718884e7bedaaaa527",
+    "hash": "0724401e2815b80629efab2f95146ea0",
     "packages": [
         {
             "name": "evenement/evenement",
@@ -460,33 +460,38 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.1.7",
+            "version": "v2.2.0",
             "target-dir": "Symfony/Component/EventDispatcher",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/EventDispatcher",
-                "reference": "v2.1.7"
+                "url": "https://github.com/symfony/EventDispatcher.git",
+                "reference": "v2.2.0-RC3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/symfony/EventDispatcher/archive/v2.1.7.zip",
-                "reference": "v2.1.7",
+                "url": "https://api.github.com/repos/symfony/EventDispatcher/zipball/v2.2.0-RC3",
+                "reference": "v2.2.0-RC3",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
             "require-dev": {
-                "symfony/dependency-injection": "2.1.*"
+                "symfony/dependency-injection": ">=2.0,<3.0"
             },
             "suggest": {
-                "symfony/dependency-injection": "2.1.*",
-                "symfony/http-kernel": "2.1.*"
+                "symfony/dependency-injection": "2.2.*",
+                "symfony/http-kernel": "2.2.*"
             },
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.2-dev"
+                }
+            },
             "autoload": {
                 "psr-0": {
-                    "Symfony\\Component\\EventDispatcher": ""
+                    "Symfony\\Component\\EventDispatcher\\": ""
                 }
             },
             "notification-url": "http://packagist.org/downloads/",
@@ -505,7 +510,47 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "http://symfony.com",
-            "time": "2013-01-11 00:31:43"
+            "time": "2013-02-11 11:26:43"
+        },
+        {
+            "name": "tijsverkoyen/twitteroauth",
+            "version": "2.3.1",
+            "target-dir": "TijsVerkoyen/Twitter",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/tijsverkoyen/TwitterOAuth",
+                "reference": "2.3.1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/tijsverkoyen/TwitterOAuth/zipball/2.3.1",
+                "reference": "2.3.1",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "php": ">=5.2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "TijsVerkoyen\\Twitter": ""
+                }
+            },
+            "notification-url": "http://packagist.org/downloads/",
+            "license": [
+                "BSD"
+            ],
+            "authors": [
+                {
+                    "name": "Tijs Verkoyen",
+                    "email": "php-twitter@verkoyen.eu",
+                    "role": "Developer"
+                }
+            ],
+            "description": "PHP Twitter is a (wrapper)class to communicate with Twitter.",
+            "homepage": "https://github.com/tijsverkoyen/TwitterOAuth",
+            "time": "2013-02-03 15:38:31"
         }
     ],
     "packages-dev": null,

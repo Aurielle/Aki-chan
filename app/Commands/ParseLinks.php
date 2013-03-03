@@ -27,15 +27,22 @@ class ParseLinks extends Nette\Object
 	/** @var Kdyby\Curl\CurlSender */
 	protected $curlSender;
 
+	/** @var Aki\Irc\Logger */
+	protected $logger;
+
+	/** @var Aki\Twitter\Twitter */
+	protected $twitter;
+
 	/** @var int */
 	protected $limit = 1;
 
 
 
-	public function __construct(Aki\Irc\Bot $bot, Curl\CurlSender $curlSender)
+	public function __construct(Aki\Irc\Bot $bot, Curl\CurlSender $curlSender, Aki\Irc\Logger $logger, Aki\Twitter\Twitter $twitter)
 	{
 		$this->bot = $bot;
 		$this->curlSender = $curlSender;
+		$this->twitter = $twitter;
 
 		$this->bot->onDataReceived[] = callback($this, 'onDataReceived');
 	}
@@ -132,7 +139,6 @@ class ParseLinks extends Nette\Object
 		$matches = Nette\Utils\Strings::match($link, $regex);
 		$vid = $matches[1];
 
-		// @todo: use curl
 		$url = "http://gdata.youtube.com/feeds/api/videos/$vid?v=2&alt=json";
 		$ch = new Curl\Request($url);
 		try {
@@ -156,10 +162,8 @@ class ParseLinks extends Nette\Object
 		$matches = Nette\Utils\Strings::match($link, $regex);
 		$tweetid = $matches[1];
 
-		$url = "http://api.twitter.com/1/statuses/show.json?id=$tweetid";
-		$ch = new Curl\Request($url);
 		try {
-			$res = $this->curlSender->send($ch);
+			$json = $this->twitter->statusesShow($tweetid);
 
 		} catch (\Exception $e) {
 			Nette\Diagnostics\Debugger::log($e, Nette\Diagnostics\Debugger::ERROR);
@@ -168,10 +172,9 @@ class ParseLinks extends Nette\Object
 			return FALSE;
 		}
 
-		$json = json_decode($res->getResponse());
-		$text = str_replace(array("\r\n", "\r", "\n"), array("\n", "\n", ' '), $json->text);
+		$text = str_replace(array("\r\n", "\r", "\n"), array("\n", "\n", ' '), $json['text']);
 		$text = trim(htmlspecialchars_decode($text, ENT_QUOTES));
-		return sprintf('<%s> %s', $json->user->screen_name, $text);
+		return sprintf('<%s> %s', $json['user']['screen_name'], $text);
 	}
 
 
