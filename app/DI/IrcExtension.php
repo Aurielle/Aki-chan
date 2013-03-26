@@ -9,7 +9,7 @@
  * the file license.md that was distributed with this source code.
  */
 
-namespace Aki\Config;
+namespace Aki\DI;
 
 use Aki, Nette;
 
