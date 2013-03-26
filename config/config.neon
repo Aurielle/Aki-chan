@@ -35,9 +35,6 @@ services:
 	stdout:
 		class: Aki\Stream\Stdout
 
-	curlSender:
-		class: Kdyby\Curl\CurlSender
-
 	logger:
 		class: Aki\Irc\Logger
 		setup:

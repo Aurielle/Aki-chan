@@ -1,5 +1,5 @@
 {
-    "hash": "e17cdd233fc6f60120266c8b88c3a29c",
+    "hash": "a5bd718349d5e088958cbfe3f34e3b43",
     "packages": [
         {
             "name": "evenement/evenement",
@@ -236,21 +236,15 @@
         },
         {
             "name": "kdyby/curl",
-            "version": "v1.0.2",
+            "version": "dev-aki-fix-namespace-v1.0.2",
             "source": {
                 "type": "git",
-                "url": "https://github.com/Kdyby/Curl.git",
-                "reference": "v1.0.2"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Kdyby/Curl/zipball/v1.0.2",
-                "reference": "v1.0.2",
-                "shasum": ""
+                "url": "https://github.com/Aurielle/Curl",
+                "reference": "dce096917c64cc2e1f567f853cc196c63fc493d0"
             },
             "require": {
                 "ext-curl": "*",
-                "nette/nette": ">=2.0,<3.0"
+                "nette/nette": "~2.0"
             },
             "require-dev": {
                 "nette/tester": "@dev"
@@ -264,7 +258,6 @@
                     "src/Kdyby/Curl/exceptions.php"
                 ]
             },
-            "notification-url": "http://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause",
                 "GPL-2.0",
@@ -283,7 +276,11 @@
                 "http",
                 "nette"
             ],
-            "time": "2013-03-07 08:44:20"
+            "support": {
+                "email": "filip@prochazka.su",
+                "issues": "https://github.com/kdyby/curl/issues"
+            },
+            "time": "2013-03-26 16:55:20"
         },
         {
             "name": "nette/nette",
@@ -553,12 +550,20 @@
             "time": "2013-02-03 15:38:31"
         }
     ],
-    "packages-dev": null,
+    "packages-dev": [
+
+    ],
     "aliases": [
 
     ],
     "minimum-stability": "stable",
-    "stability-flags": [
+    "stability-flags": {
+        "kdyby/curl": 20
+    },
+    "platform": {
+        "php": ">=5.3.2"
+    },
+    "platform-dev": [
 
     ]
 }

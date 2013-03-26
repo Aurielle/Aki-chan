@@ -75,6 +75,7 @@ if ($configurator->isDebugMode()) {
 
 $configurator->onCompile[] = function($configurator, $compiler) {
 	$compiler->addExtension('irc', new Aki\Config\IrcExtension);
+	$compiler->addExtension('curl', new Kdyby\Curl\DI\CurlExtension);
 };
 $container = $configurator->createContainer();
 $container->irc->bot->run();

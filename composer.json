@@ -14,7 +14,13 @@
 		"php": ">=5.3.2",
 		"react/react": "0.2.*",
 		"nette/nette": "2.0.*",
-		"kdyby/curl": "1.0.*",
+		"kdyby/curl": "dev-aki-fix-namespace-v1.0.2",
 		"tijsverkoyen/twitteroauth": "2.3.*"
-	}
+	},
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/Aurielle/Curl"
+		}
+	]
 }
