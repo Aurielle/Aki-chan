@@ -16,16 +16,6 @@ parameters:
 
 
 services:
-	irc.bot:
-		class: Aki\Irc\Bot
-
-	eventLoop:
-		class: React\EventLoop\LoopInterface
-		factory: React\EventLoop\Factory::create
-
-	connection:
-		class: Aki\Irc\Connection
-
 	ircSocket:
 		class: Aki\Stream\IrcSocket
 

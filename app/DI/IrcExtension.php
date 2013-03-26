@@ -123,6 +123,16 @@ class IrcExtension extends Nette\Config\CompilerExtension
 		$setup = $config['setup'];
 
 
+		// Services registration
+		$container->addDefinition($this->prefix('bot'))
+			->setClass('Aki\Irc\Bot');
+
+		$container->addDefinition($this->prefix('eventLoop'))
+			->setClass('React\EventLoop\LoopInterface')
+			->setFactory('React\EventLoop\Factory::create');
+
+		$container->addDefinition($this->prefix('connection'))
+			->setClass('Aki\Irc\Connection');
 
 		$container->addDefinition($this->prefix('network'))
 			->setClass('Aki\Irc\Network', array($network, $setup));
