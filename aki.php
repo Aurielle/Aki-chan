@@ -75,6 +75,7 @@ if ($configurator->isDebugMode()) {
 
 $configurator->onCompile[] = function($configurator, $compiler) {
 	$compiler->addExtension('irc', new Aki\DI\IrcExtension);
+	$compiler->addExtension('stream', new Aki\DI\StreamExtension);
 	$compiler->addExtension('curl', new Kdyby\Curl\DI\CurlExtension);
 };
 $container = $configurator->createContainer();

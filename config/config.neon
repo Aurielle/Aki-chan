@@ -16,15 +16,6 @@ parameters:
 
 
 services:
-	ircSocket:
-		class: Aki\Stream\IrcSocket
-
-	stdin:
-		class: Aki\Stream\Stdin
-
-	stdout:
-		class: Aki\Stream\Stdout
-
 	logger:
 		class: Aki\Irc\Logger
 		setup:
