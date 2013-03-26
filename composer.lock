@@ -1,5 +1,5 @@
 {
-    "hash": "0724401e2815b80629efab2f95146ea0",
+    "hash": "e17cdd233fc6f60120266c8b88c3a29c",
     "packages": [
         {
             "name": "evenement/evenement",
@@ -236,21 +236,21 @@
         },
         {
             "name": "kdyby/curl",
-            "version": "dev-master",
+            "version": "v1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Kdyby/Curl.git",
-                "reference": "cdefd9157af825023ce34225441f73bcb86dc8f9"
+                "reference": "v1.0.2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Kdyby/Curl/zipball/cdefd9157af825023ce34225441f73bcb86dc8f9",
-                "reference": "cdefd9157af825023ce34225441f73bcb86dc8f9",
+                "url": "https://api.github.com/repos/Kdyby/Curl/zipball/v1.0.2",
+                "reference": "v1.0.2",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
-                "nette/nette": "@dev"
+                "nette/nette": ">=2.0,<3.0"
             },
             "require-dev": {
                 "nette/tester": "@dev"
@@ -283,20 +283,20 @@
                 "http",
                 "nette"
             ],
-            "time": "2013-02-21 17:50:19"
+            "time": "2013-03-07 08:44:20"
         },
         {
             "name": "nette/nette",
-            "version": "v2.0.8",
+            "version": "v2.0.10",
             "source": {
                 "type": "git",
-                "url": "http://github.com/nette/nette",
-                "reference": "v2.0.8"
+                "url": "https://github.com/nette/nette.git",
+                "reference": "v2.0.10"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/nette/nette/archive/v2.0.8.zip",
-                "reference": "v2.0.8",
+                "url": "https://api.github.com/repos/nette/nette/zipball/v2.0.10",
+                "reference": "v2.0.10",
                 "shasum": ""
             },
             "require": {
@@ -357,7 +357,7 @@
                 "neon",
                 "templating"
             ],
-            "time": "2013-01-01 20:42:38"
+            "time": "2013-03-08 15:44:35"
         },
         {
             "name": "react/promise",
@@ -558,7 +558,7 @@
 
     ],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "kdyby/curl": 20
-    }
+    "stability-flags": [
+
+    ]
 }
