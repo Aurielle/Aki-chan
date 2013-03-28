@@ -52,8 +52,8 @@ class AutoRejoin extends Nette\Object implements Events\Subscriber
 	public function onKickedFromChannel($channel)
 	{
 		if (empty($this->channels) || in_array($channel, $this->channels)) {
-			$this->logger->logMessage(ILogger::NOTICE, 'Automatic rejoin enabled for %s, rejoining', $matches[2]);
-			$this->bridgeChannels->joinChannel($matches[2]);
+			$this->logger->logMessage(ILogger::NOTICE, 'Automatic rejoin enabled for %s, rejoining', $channel);
+			$this->bridgeChannels->joinChannel($channel);
 		}
 	}
 
