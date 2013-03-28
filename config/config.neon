@@ -24,25 +24,25 @@ services:
 
 	communicationLogger:
 		class: Aki\Commands\CommunicationLogger
-		tags: [run]
+		tags: [kdyby.subscriber]
 
 	pingPong:
 		class: Aki\Commands\PingPong
-		tags: [run]
+		tags: [kdyby.subscriber]
 
 	ctcpResponse:
 		class: Aki\Commands\CtcpResponse
-		tags: [run]
+		tags: [kdyby.subscriber]
 
 	autoRejoin:
 		class: Aki\Commands\AutoRejoin
-		tags: [run]
+		tags: [kdyby.subscriber]
 		setup:
 			- setChannels(%autoRejoinChannels%)
 
 	parseLinks:
 		class: Aki\Commands\ParseLinks
-		tags: [run]
+		tags: [kdyby.subscriber]
 		setup:
 			- setLimit(%maxLinksPerMessage%)
 

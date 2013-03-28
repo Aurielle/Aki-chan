@@ -13,34 +13,31 @@ namespace Aki\Commands;
 
 use Aki, Nette, React;
 use Aki\Irc\ILogger;
+use Kdyby\Events;
 
 
 
 /**
  * Will automatically rejoin channels when kicked.
  */
-class AutoRejoin extends Nette\Object
+class AutoRejoin extends Nette\Object implements Events\Subscriber
 {
-	/** @var Aki\Irc\Bot */
-	protected $bot;
-
-	/** @var Aki\Stream\Stdout */
-	protected $stdout;
+	/** @var Aki\Irc\Bridge\Channels */
+	protected $bridgeChannels;
 
 	/** @var Aki\Irc\Logger */
 	protected $logger;
+
 
 	/** @var array */
 	protected $channels = array();
 
 
 
-	public function __construct(Aki\Irc\Bot $bot, Aki\Stream\Stdout $stdout, Aki\Irc\Logger $logger)
+	public function __construct(Aki\Irc\Bridge\Channels $bridgeChannels, Aki\Irc\Logger $logger)
 	{
-		$this->bot = $bot;
-		$this->stdout = $stdout;
-
-		$this->bot->onDataReceived[] = callback($this, 'onDataReceived');
+		$this->bridgeChannels = $bridgeChannels;
+		$this->logger = $logger;
 	}
 
 
@@ -52,13 +49,17 @@ class AutoRejoin extends Nette\Object
 	}
 
 
-	public function onDataReceived($data, $connection)
+	public function onKickedFromChannel($channel)
 	{
-		if ($matches = Nette\Utils\Strings::match($data, '#^\:([^!]+)\![^ ]+ KICK ([^ ]+) ' . preg_quote($this->bot->getNick(), '#') . '#')) {
-			if (empty($this->channels) || in_array($matches[2], $this->channels)) {
-				$this->logger->logMessage(ILogger::NOTICE, 'Automatic rejoin enabled for %s, rejoining', $matches[2]);
-				$this->bot->joinChannel($matches[2]);
-			}
+		if (empty($this->channels) || in_array($channel, $this->channels)) {
+			$this->logger->logMessage(ILogger::NOTICE, 'Automatic rejoin enabled for %s, rejoining', $matches[2]);
+			$this->bridgeChannels->joinChannel($matches[2]);
 		}
+	}
+
+
+	public function getSubscribedEvents()
+	{
+		return array('Aki\Irc\Session::onKickedFromChannel');
 	}
 }

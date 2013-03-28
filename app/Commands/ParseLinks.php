@@ -13,16 +13,17 @@ namespace Aki\Commands;
 
 use Aki, Nette, React;
 use Kdyby\Curl;
+use Kdyby\Events;
 
 
 
 /**
  * Displays contents of link when posted into a channel.
  */
-class ParseLinks extends Nette\Object
+class ParseLinks extends Nette\Object implements Events\Subscriber
 {
-	/** @var Aki\Irc\Bot */
-	protected $bot;
+	/** @var Aki\Irc\Message */
+	protected $message;
 
 	/** @var Kdyby\Curl\CurlSender */
 	protected $curlSender;
@@ -38,13 +39,11 @@ class ParseLinks extends Nette\Object
 
 
 
-	public function __construct(Aki\Irc\Bot $bot, Curl\CurlSender $curlSender, Aki\Irc\Logger $logger, Aki\Twitter\Twitter $twitter)
+	public function __construct(Aki\Irc\Message $message, Curl\CurlSender $curlSender, Aki\Irc\Logger $logger, Aki\Twitter\Twitter $twitter)
 	{
-		$this->bot = $bot;
+		$this->message = $message;
 		$this->curlSender = $curlSender;
 		$this->twitter = $twitter;
-
-		$this->bot->onDataReceived[] = callback($this, 'onDataReceived');
 	}
 
 
@@ -52,10 +51,6 @@ class ParseLinks extends Nette\Object
 	{
 		if (!($matches = Nette\Utils\Strings::match($data, '~^\:([^!]+)\![^ ]+ PRIVMSG (\#[^ ]+) \:(.*https?\:\/\/.*)~i'))) {
 			return;
-		}
-
-		if ($matches[1] === $this->bot->getNick()) {
-			return;	// RECURSION!
 		}
 
 
@@ -84,7 +79,7 @@ class ParseLinks extends Nette\Object
 				continue;
 			}
 
-			$this->bot->send(sprintf('PRIVMSG %s :%s', $matches[2], $response));
+			$this->message->send(sprintf('PRIVMSG %s :%s', $matches[2], $response));
 		}
 	}
 
@@ -100,6 +95,13 @@ class ParseLinks extends Nette\Object
 		$this->limit = (int) $limit;
 		return $this;
 	}
+
+
+	public function getSubscribedEvents()
+	{
+		return array('Aki\Irc\Message::onDataReceived');
+	}
+
 
 
 	private function matchLinks($data)

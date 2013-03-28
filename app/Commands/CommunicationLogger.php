@@ -12,13 +12,14 @@
 namespace Aki\Commands;
 
 use Aki, Nette, React;
+use Kdyby\Events;
 
 
 
 /**
  * Logs all data communication to the server console.
  */
-class CommunicationLogger extends Nette\Object
+class CommunicationLogger extends Nette\Object implements Events\Subscriber
 {
 	/** @var Aki\Irc\Bot */
 	protected $bot;
@@ -32,9 +33,6 @@ class CommunicationLogger extends Nette\Object
 	{
 		$this->bot = $bot;
 		$this->stdout = $stdout;
-
-		$this->bot->onDataReceived[] = callback($this, 'onDataReceived');
-		$this->bot->onDataSent[] = callback($this, 'onDataSent');
 	}
 
 
@@ -48,5 +46,10 @@ class CommunicationLogger extends Nette\Object
 	{
 		$data = Aki\Irc\Utils::stripFormatting($data);
 		fwrite($this->stdout->socket, "> $data\n");
+	}
+
+	public function getSubscribedEvents()
+	{
+		return array('Aki\Irc\Message::onDataReceived', 'Aki\Irc\Message::onDataSent');
 	}
 }

@@ -77,6 +77,7 @@ $configurator->onCompile[] = function($configurator, $compiler) {
 	$compiler->addExtension('irc', new Aki\DI\IrcExtension);
 	$compiler->addExtension('stream', new Aki\DI\StreamExtension);
 	$compiler->addExtension('curl', new Kdyby\Curl\DI\CurlExtension);
+	$compiler->addExtension('events', new Kdyby\Events\DI\EventsExtension);
 };
 $container = $configurator->createContainer();
 $container->irc->bot->run();

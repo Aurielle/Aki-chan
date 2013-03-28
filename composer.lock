@@ -1,5 +1,5 @@
 {
-    "hash": "a5bd718349d5e088958cbfe3f34e3b43",
+    "hash": "bcea185946b0b6e1e056c4f0522482b0",
     "packages": [
         {
             "name": "evenement/evenement",
@@ -236,11 +236,11 @@
         },
         {
             "name": "kdyby/curl",
-            "version": "dev-aki-fix-namespace-v1.0.2",
+            "version": "v1.0.2",
             "source": {
                 "type": "git",
-                "url": "https://github.com/Aurielle/Curl",
-                "reference": "dce096917c64cc2e1f567f853cc196c63fc493d0"
+                "url": "https://github.com/Aurielle/Kdyby-Curl",
+                "reference": "v1.0.2"
             },
             "require": {
                 "ext-curl": "*",
@@ -280,7 +280,56 @@
                 "email": "filip@prochazka.su",
                 "issues": "https://github.com/kdyby/curl/issues"
             },
-            "time": "2013-03-26 16:55:20"
+            "time": "2013-03-07 08:44:09"
+        },
+        {
+            "name": "kdyby/events",
+            "version": "v1.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Aurielle/Kdyby-Events",
+                "reference": "v1.0.2"
+            },
+            "require": {
+                "nette/nette": "2.0.*"
+            },
+            "require-dev": {
+                "nette/tester": "@dev"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Kdyby\\Events\\": "src/"
+                },
+                "classmap": [
+                    "src/Kdyby/Events/exceptions.php"
+                ],
+                "files": [
+                    "src/Doctrine/compatibility.php"
+                ]
+            },
+            "license": [
+                "BSD-3-Clause",
+                "GPL-2.0",
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Filip Procházka",
+                    "homepage": "http://filip-prochazka.com"
+                }
+            ],
+            "description": "Events for Nette Framework",
+            "homepage": "http://kdyby.org",
+            "keywords": [
+                "kdyby",
+                "nette"
+            ],
+            "support": {
+                "email": "filip@prochazka.su",
+                "issues": "https://github.com/kdyby/events/issues"
+            },
+            "time": "2013-03-28 12:31:31"
         },
         {
             "name": "nette/nette",
@@ -557,9 +606,9 @@
 
     ],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "kdyby/curl": 20
-    },
+    "stability-flags": [
+
+    ],
     "platform": {
         "php": ">=5.3.2"
     },

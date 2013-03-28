@@ -12,6 +12,7 @@
 namespace Aki\Commands;
 
 use Aki, Nette, React;
+use Kdyby\Events;
 
 
 
@@ -19,7 +20,7 @@ use Aki, Nette, React;
  * Responds to PING events sent by server,
  * keeping connection alive.
  */
-class PingPong extends Nette\Object
+class PingPong extends Nette\Object implements Events\Subscriber
 {
 	/** @var Aki\Irc\Bot */
 	protected $bot;
@@ -29,7 +30,6 @@ class PingPong extends Nette\Object
 	public function __construct(Aki\Irc\Bot $bot)
 	{
 		$this->bot = $bot;
-		$this->bot->onDataReceived[] = callback($this, 'respondToPing');
 	}
 
 
@@ -39,7 +39,7 @@ class PingPong extends Nette\Object
 	 * @param  Aki\Irc\Connection $connection
 	 * @return void
 	 */
-	public function respondToPing($data, $connection)
+	public function onDataReceived($data, $connection)
 	{
 		$data = Aki\Irc\Utils::stripFormatting($data);
 
@@ -48,5 +48,11 @@ class PingPong extends Nette\Object
 		if ($tmp[0] === 'PING') {
 			$this->bot->send("PONG {$tmp[1]}");
 		}
+	}
+
+
+	public function getSubscribedEvents()
+	{
+		return array('Aki\Irc\Message::onDataReceived');
 	}
 }

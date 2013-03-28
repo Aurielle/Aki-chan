@@ -134,7 +134,43 @@ class IrcExtension extends Nette\Config\CompilerExtension
 		$container->addDefinition($this->prefix('connection'))
 			->setClass('Aki\Irc\Connection');
 
+		$container->addDefinition($this->prefix('message'))
+			->setClass('Aki\Irc\Message');
+
 		$container->addDefinition($this->prefix('network'))
 			->setClass('Aki\Irc\Network', array($network, $setup));
+
+		$container->addDefinition($this->prefix('session'))
+			->setClass('Aki\Irc\Session');
+
+
+		$container->addDefinition($this->prefix('bridge'))
+			->setClass('Aki\Irc\Bridge\Bridge')
+			->addTag('kdyby.subscriber');
+
+		$container->addDefinition($this->prefix('bridge.connection'))
+			->setClass('Aki\Irc\Bridge\Connection')
+			->addTag('kdyby.subscriber');
+
+		$container->addDefinition($this->prefix('bridge.identification'))
+			->setClass('Aki\Irc\Bridge\Identification')
+			->addTag('kdyby.subscriber');
+
+		$container->addDefinition($this->prefix('bridge.channels'))
+			->setClass('Aki\Irc\Bridge\Channels')
+			->addTag('kdyby.subscriber');
+
+
+		$container->addDefinition($this->prefix('watchman.nick'))
+			->setClass('Aki\Irc\Watchman\Nick')
+			->addTag('kdyby.subscriber');
+
+		$container->addDefinition($this->prefix('watchman.channels'))
+			->setClass('Aki\Irc\Watchman\Channels')
+			->addTag('kdyby.subscriber');
+
+		$container->addDefinition($this->prefix('watchman.modes'))
+			->setClass('Aki\Irc\Watchman\Modes')
+			->addTag('kdyby.subscriber');
 	}
 }

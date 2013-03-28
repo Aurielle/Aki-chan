@@ -26,26 +26,45 @@ class Utils extends Nette\Object
 	}
 
 
+	/**
+	 * Strip colours from given string.
+	 */
 	public static function stripColours($s)
 	{
 		return Nette\Utils\Strings::replace($s, '~\x03(?:\d{1,2},\d{1,2}|\d{1,2}|,\d{1,2}|)~', '');
 	}
 
+
+	/**
+	 * Strip bold tags from given string.
+	 */
 	public static function stripBold($s)
 	{
 		return str_replace("\x02", '', $s);
 	}
 
+
+	/**
+	 * Strip reverse tags from given string.
+	 */
 	public static function stripReverse($s)
 	{
 		return str_replace("\x16", '', $s);
 	}
 
+
+	/**
+	 * Strip underline tags from given string.
+	 */
 	public static function stripUnderline($s)
 	{
 		return str_replace(array("\x1f", "\x1F"), array('', ''), $s);
 	}
 
+
+	/**
+	 * Strip all formatting from given string.
+	 */
 	public static function stripFormatting($s)
 	{
 		$s = self::stripColours($s);

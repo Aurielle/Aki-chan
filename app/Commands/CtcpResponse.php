@@ -12,19 +12,24 @@
 namespace Aki\Commands;
 
 use Aki, Nette, React;
+use Kdyby\Events;
 
 
 
 /**
  * Responds to CTCP commands such as VERSION.
  */
-class CtcpResponse extends Nette\Object
+class CtcpResponse extends Nette\Object implements Events\Subscriber
 {
-	/** @var Aki\Irc\Bot */
-	protected $bot;
+	/** @var Aki\Irc\Message */
+	protected $message;
 
+	/** @var Aki\Irc\Session */
+	protected $session;
+
+	/** @var array */
 	public $fingerResponses = array(
-		'%s, you baka!!!',
+		'%s-chan, you baka!!!',
 		'You perv!',
 		"Aren't you perverted, %s?",
 		'Fine. Prepare your anus.',
@@ -35,16 +40,16 @@ class CtcpResponse extends Nette\Object
 
 
 
-	public function __construct(Aki\Irc\Bot $bot)
+	public function __construct(Aki\Irc\Message $message, Aki\Irc\Session $session)
 	{
-		$this->bot = $bot;
-		$this->bot->onDataReceived[] = callback($this, 'onDataReceived');
+		$this->message = $message;
+		$this->session = $session;
 	}
 
 
 	public function onDataReceived($data, $connection)
 	{
-		if ($matches = Nette\Utils\Strings::match($data, '#\:([^!]+)\![^ ]+ PRIVMSG ' . preg_quote($this->bot->getNick(), '#') . " :\x01(VERSION|PING|TIME|SOURCE|FINGER) ?(.+)?\x01#")) {
+		if ($matches = Nette\Utils\Strings::match($data, '#\:([^!]+)\![^ ]+ PRIVMSG ' . preg_quote($this->session->nick, '#') . " :\x01(VERSION|PING|TIME|SOURCE|FINGER) ?(.+)?\x01#")) {
 			$this->{strtolower($matches[2])}($matches);
 		}
 	}
@@ -53,27 +58,33 @@ class CtcpResponse extends Nette\Object
 
 	protected function version($matches)
 	{
-		$this->bot->send("NOTICE $matches[1] :\x01VERSION " . Aki\Aki::NAME . " " . Aki\Aki::VERSION . "\x01");
+		$this->message->send("NOTICE $matches[1] :\x01VERSION " . Aki\Aki::NAME . " " . Aki\Aki::VERSION . "\x01");
 	}
 
 	protected function ping($matches)
 	{
-		$this->bot->send("NOTICE $matches[1] :\x01PING " . time() . "\x01");
+		$this->message->send("NOTICE $matches[1] :\x01PING " . time() . "\x01");
 	}
 
 	protected function time($matches)
 	{
-		$this->bot->send("NOTICE $matches[1] :\x01TIME " . date('r') . "\x01");
+		$this->message->send("NOTICE $matches[1] :\x01TIME " . date('r') . "\x01");
 	}
 
 	protected function source($matches)
 	{
-		$this->bot->send("NOTICE $matches[1] :\x01SOURCE https://github.com/Aurielle/Aki-chan\x01");
+		$this->message->send("NOTICE $matches[1] :\x01SOURCE https://github.com/Aurielle/Aki-chan\x01");
 	}
 
 	protected function finger($matches)
 	{
 		$random = sprintf($this->fingerResponses[array_rand($this->fingerResponses)], $matches[1]);
-		$this->bot->send("NOTICE $matches[1] :\x01FINGER $random\x01");
+		$this->message->send("NOTICE $matches[1] :\x01FINGER $random\x01");
+	}
+
+
+	public function getSubscribedEvents()
+	{
+		return array('Aki\Irc\Message::onDataReceived');
 	}
 }
