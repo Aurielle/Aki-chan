@@ -2,9 +2,12 @@ irc:
 	network:
 		server: irc.rizon.net
 		port: 6667
+		protocol: tcp
+		password:
+		context: []
 
 		nick: Akichan
-		password:
+		nickPassword:
 		alternativeNicks: []
 		ident: Aki-chan
 		user: Aki-chan - ReactPHP & Nette Framework driven bot

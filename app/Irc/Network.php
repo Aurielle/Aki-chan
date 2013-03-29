@@ -25,10 +25,20 @@ class Network extends Nette\Object
 	protected $port;
 
 	/** @var string */
-	protected $nick;
+	protected $protocol;
 
 	/** @var string */
 	protected $password;
+
+	/** @var array */
+	protected $context;
+
+
+	/** @var string */
+	protected $nick;
+
+	/** @var string */
+	protected $nickPassword;
 
 	/** @var array */
 	protected $alternativeNicks;
@@ -68,14 +78,29 @@ class Network extends Nette\Object
 		return $this->port;
 	}
 
-	public function getNick()
+	public function getProtocol()
 	{
-		return $this->nick;
+		return $this->protocol;
 	}
 
 	public function getPassword()
 	{
 		return $this->password;
+	}
+
+	public function getContext()
+	{
+		return $this->context;
+	}
+
+	public function getNick()
+	{
+		return $this->nick;
+	}
+
+	public function getNickPassword()
+	{
+		return $this->nickPassword;
 	}
 
 	public function getAlternativeNicks()

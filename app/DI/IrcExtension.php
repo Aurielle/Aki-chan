@@ -22,8 +22,12 @@ class IrcExtension extends Nette\Config\CompilerExtension
 		'network' => array(
 			'server' => NULL,
 			'port' => 6667,
-			'nick' => 'AkichanBot',
+			'protocol' => 'tcp',
 			'password' => NULL,
+			'context' => array(),
+
+			'nick' => 'AkichanBot',
+			'nickPassword' => NULL,
 			'alternativeNicks' => array(),
 			'ident' => NULL,
 			'user' => NULL,
@@ -59,7 +63,7 @@ class IrcExtension extends Nette\Config\CompilerExtension
 
 		// Server
 		if (empty($network['server'])) {
-			throw new Nette\InvalidStateException("Network has no server specified.");
+			throw new Nette\InvalidStateException('Network has no server specified.');
 		}
 
 		$network['server'] = (string) $network['server'];
@@ -67,11 +71,21 @@ class IrcExtension extends Nette\Config\CompilerExtension
 		// Port
 		$network['port'] = (int) $network['port'];
 
+		// Secured connection
+		$protocol = $network['protocol'] = (string) $network['protocol'];
+		if(!in_array($network['protocol'], stream_get_transports())) {
+			throw new Nette\NotSupportedException("Cannot use protocol '$protocol', necessary extension is not loaded.");
+		}
+
+		// Network password
+		$network['password'] = empty($network['password']) ? NULL : (string) $network['password'];
+
+
 		// Nick
 		$network['nick'] = (string) $network['nick'];
 
-		// Password
-		$network['password'] = empty($network['password']) ? NULL : (string) $network['password'];
+		// Nick password
+		$network['nickPassword'] = empty($network['nickPassword']) ? NULL : (string) $network['nickPassword'];
 
 		// Alternative nicks
 		if (empty($network['alternativeNicks'])) {

@@ -22,4 +22,15 @@ class Connection extends React\Socket\Connection
 	{
 		parent::__construct($socket->socket, $loop);
 	}
+
+
+	public function handleData($stream)
+	{
+		$data = fgets($stream, $this->bufferSize);
+		if ('' === $data || false === $data) {
+			$this->end();
+		} else {
+			$this->emit('data', array($data, $this));
+		}
+	}
 }

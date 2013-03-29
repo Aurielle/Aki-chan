@@ -53,7 +53,7 @@ class Channels extends Nette\Object implements Events\Subscriber
 		}
 
 		// waiting for identification
-		if ($this->network->password && $this->network->setup->nickserv && !$this->session->isIdentified()) {
+		if ($this->network->nickPassword && $this->network->setup->nickserv && !$this->session->isIdentified()) {
 			return;
 		}
 

@@ -21,10 +21,34 @@ class IrcSocket extends Nette\Object
 	/** @var resource */
 	protected $socket;
 
+	/** @var Aki\Irc\Network */
+	protected $network;
+
+
 	public function __construct(Aki\Irc\Network $network)
 	{
-		$this->socket = fsockopen($network->server, $network->port);
+		$remote = "{$network->protocol}://{$network->server}:{$network->port}";
+		$errno = $errstr = NULL;
+
+		$this->socket = $this->connect($remote, $errno, $errstr, $network->context);
+		if (!$this->socket) {
+			throw new Aki\ConnectionException('Unable to connect: socket error ' . $errstr . " ($errno)");
+		}
+
 		stream_set_blocking($this->socket, 0);
+	}
+
+
+	protected function connect($remote, &$errno, &$errstr, array $context = array())
+	{
+		return stream_socket_client(
+			$remote,
+			$errno,
+			$errstr,
+			ini_get('default_socket_timeout'),
+			STREAM_CLIENT_CONNECT,
+			stream_context_create($context)
+		);
 	}
 
 

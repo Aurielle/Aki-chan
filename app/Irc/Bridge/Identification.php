@@ -62,9 +62,9 @@ class Identification extends Nette\Object implements Events\Subscriber
 	 */
 	public function identify()
 	{
-		if ($this->network->password && $this->network->setup->nickserv) {
+		if ($this->network->nickPassword && $this->network->setup->nickserv) {
 			if ($this->session->nick === $this->network->nick) {
-				$this->message->send(sprintf('PRIVMSG %s :IDENTIFY %s', $this->network->setup->nickserv, $this->network->password));
+				$this->message->send(sprintf('PRIVMSG %s :IDENTIFY %s', $this->network->setup->nickserv, $this->network->nickPassword));
 				$this->logger->logMessage(Irc\ILogger::INFO, 'Identifying with NickServ...');
 
 			} else {
@@ -80,12 +80,12 @@ class Identification extends Nette\Object implements Events\Subscriber
 	 */
 	public function ghost()
 	{
-		if ($this->network->password && $this->network->setup->nickserv && $this->session->nick !== $this->network->nick) {
+		if ($this->network->nickPassword && $this->network->setup->nickserv && $this->session->nick !== $this->network->nick) {
 			if ($this->sentGhost && time() < ($this->sentGhost + $this->network->setup->ghostDelay)) {
 				$this->logger->logMessage(Irc\ILogger::WARNING, 'Ghost attempted too early, allowed only once every %d seconds.', $this->network->setup->ghostDelay);
 			}
 
-			$this->send(sprintf('PRIVMSG %s :GHOST %s %s', $this->network->setup->nickserv, $this->network->nick, $this->network->password));
+			$this->send(sprintf('PRIVMSG %s :GHOST %s %s', $this->network->setup->nickserv, $this->network->nick, $this->network->nickPassword));
 			$this->logger->logMessage(Irc\ILogger::NOTICE, '~ Sending Ghost (current nick: %s; ghosting: %s)', $this->session->nick, $this->network->nick);
 			$this->sentGhost = time();
 		}

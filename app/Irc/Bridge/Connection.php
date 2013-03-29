@@ -66,6 +66,10 @@ class Connection extends Nette\Object implements Events\Subscriber
 			return;
 		}
 
+		if ($this->network->password) {
+			$this->message->send(sprintf('PASS %s', $this->network->password));
+		}
+
 		$this->session->setNick($nick = $this->network->nick);
 		$this->message->send(sprintf('USER %s aurielle.cz %s :%s', $this->network->ident, $nick, $this->network->user));
 		$this->message->send(sprintf('NICK %s', $nick));
