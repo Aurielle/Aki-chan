@@ -39,6 +39,14 @@ class IrcSocket extends Nette\Object
 	}
 
 
+	/**
+	 * Creates connection
+	 * @param  string $remote
+	 * @param  int $errno
+	 * @param  string $errstr
+	 * @param  array  $context
+	 * @return resource
+	 */
 	protected function connect($remote, &$errno, &$errstr, array $context = array())
 	{
 		return stream_socket_client(
@@ -52,6 +60,9 @@ class IrcSocket extends Nette\Object
 	}
 
 
+	/**
+	 * @return resource
+	 */
 	public function getSocket()
 	{
 		return $this->socket;
