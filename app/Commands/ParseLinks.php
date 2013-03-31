@@ -47,9 +47,9 @@ class ParseLinks extends Nette\Object implements Events\Subscriber
 	}
 
 
-	public function onDataReceived($data, $connection)
+	public function onDataReceived($data)
 	{
-		if (!($matches = Nette\Utils\Strings::match($data, '~^\:([^!]+)\![^ ]+ PRIVMSG (\#[^ ]+) \:(.*https?\:\/\/.*)~i'))) {
+		if (!($matches = Nette\Utils\Strings::match($data->rawData, '~^\:([^!]+)\![^ ]+ PRIVMSG (\#[^ ]+) \:(.*https?\:\/\/.*)~i'))) {
 			return;
 		}
 

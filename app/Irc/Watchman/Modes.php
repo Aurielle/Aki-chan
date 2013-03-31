@@ -39,16 +39,16 @@ class Modes extends Nette\Object implements Events\Subscriber
 
 	/**
 	 * Watches for mode changes
-	 * @param  string $data
-	 * @param  Aki\Irc\Connection $connection
+	 * @param  Irc\Event\IEvent $data
 	 * @return void
 	 */
-	public function onDataReceived($data, Irc\Connection $connection)
+	public function onDataReceived($data)
 	{
-		$tmp = explode(' ', $data);
-		if ($tmp[1] !== 'MODE') {
+		if ($data->type !== Irc\Event\Request::TYPE_MODE) {
 			return;
 		}
+
+		$tmp = explode(' ', $data->rawData);
 
 		// User mode change
 		if ($tmp[2] === $this->session->nick) {
@@ -58,7 +58,7 @@ class Modes extends Nette\Object implements Events\Subscriber
 
 		// Channel mode change
 		} else {
-			$matches = Nette\Utils\Strings::match($data, '~\:(?P<nick>[^!]+)\!(?P<hostname>[^ ]+) MODE (?P<channel>#[^ ]+) (?P<mode>(?P<mode1>\+|\-)(?P<mode2>[^ ]+)) ?(?P<users>.*)~i');
+			$matches = Nette\Utils\Strings::match($data->rawData, '~\:(?P<nick>[^!]+)\!(?P<hostname>[^ ]+) MODE (?P<channel>#[^ ]+) (?P<mode>(?P<mode1>\+|\-)(?P<mode2>[^ ]+)) ?(?P<users>.*)~i');
 
 			if ($matches['users']) {
 				$this->logger->logMessage(Irc\ILogger::DEBUG, 'Mode change for %2$s [%3$s: %4$s] by %1$s', $matches['nick'], $matches['channel'], $matches['mode'], $matches['users']);

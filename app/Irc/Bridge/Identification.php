@@ -107,18 +107,16 @@ class Identification extends Nette\Object implements Events\Subscriber
 
 	/**
 	 * Handles replies to various messages from NickServ.
-	 * @param  string $data
-	 * @param  Aki\Irc\Connection $connection
+	 * @param  Irc\Event\IEvent $data
 	 * @return void
 	 */
-	public function onDataReceived($data, Irc\Connection $connection)
+	public function onDataReceived($data)
 	{
-		$tmp = explode(' ', $data);
-		if (!($tmp[1] === 'NOTICE' && Nette\Utils\Strings::startsWith(ltrim($tmp[0], ':'), $this->network->setup->nickserv))) {
+		if (!($data->type === Irc\Event\Request::TYPE_NOTICE && $data->nickname === $this->network->setup->nickserv)) {
 			return;
 		}
 
-		$msg = Irc\Utils::stripFormatting(ltrim($tmp[3], ':'));
+		$msg = Irc\Utils::stripFormatting($data->text);
 
 		// Incorrect password for registered nick
 		if (stripos($msg, 'incorrect') !== FALSE || stripos($msg, 'denied') !== FALSE) {

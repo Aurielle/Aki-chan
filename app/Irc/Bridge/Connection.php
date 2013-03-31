@@ -13,7 +13,6 @@ namespace Aki\Irc\Bridge;
 
 use Aki, Nette, React;
 use Aki\Irc;
-use Aki\Irc\ServerCodes;
 use Kdyby\Events;
 
 
@@ -79,45 +78,42 @@ class Connection extends Nette\Object implements Events\Subscriber
 
 	/**
 	 * Handles server responses during connection phase.
-	 * @param  string $data
-	 * @param  Aki\Irc\Connection $conn
+	 * @param  Irc\Event\IEvent $data
 	 * @return void
 	 */
-	public function onDataReceived($data, Irc\Connection $connection)
+	public function onDataReceived($data)
 	{
 		if (!$this->isConnecting()) {
 			return;
 		}
 
-		// All responses should have more than one word (not checked with RFC)
-		$tmp = explode(' ', $data);
-
-		// Numeric responses (@see Aki\Irc\ServerCodes for some response codes)
-		if (!is_numeric($tmp[1])) {
+		// We want only numeric responses
+		if (!$data instanceof Irc\Event\Response) {
 			return;
 		}
 
-		switch ((int) $tmp[1]) {
+		switch ($data->code) {
 			// Server welcome message
-			case ServerCodes::WELCOME:
+			case $data::RPL_WELCOME:
 				$this->logger->logMessage(Irc\ILogger::INFO, 'Received server welcome message');
 				break;
 
 			// Bot's nick is already on the server, use a different one
-			case ServerCodes::NICK_USED:
+			case $data::ERR_NICKNAMEINUSE:
 				$this->alternativeNick();
 				break;
 
 			// Save our unique ID (what is it for?)
-			case ServerCodes::UNIQUE_ID:
-				$this->session->setUniqueId($tmp[3]);
-				$this->logger->logMessage(Irc\ILogger::INFO, 'Unique ID (%s) saved', $tmp[3]);
+			case $data::RPL_YOURID:
+				list($uniqueid, ) = explode(' ', $data->description, 2);
+				$this->session->setUniqueId($uniqueid);
+				$this->logger->logMessage(Irc\ILogger::INFO, 'Unique ID (%s) saved', $uniqueid);
 				break;
 
 			// MOTD ends, begin identifying phase
-			case ServerCodes::MOTD_END:
-			case ServerCodes::NO_MOTD:
-			case ServerCodes::SPAM:
+			case $data::RPL_ENDOFMOTD:
+			case $data::ERR_NOMOTD:
+			case $data::RPL_SPAM:
 				$this->logger->logMessage(Irc\ILogger::INFO, 'Received end of MOTD');
 				$this->onEndOfMotd();
 				break;

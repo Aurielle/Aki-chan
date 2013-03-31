@@ -73,4 +73,16 @@ class Utils extends Nette\Object
 		$s = self::stripUnderline($s);
 		return str_replace(array("\x0f", "\x0F"), array('', ''), $s);
 	}
+
+
+	/**
+	 * Determines whether a given string is a valid IRC channel name.
+	 * @param string $string String to analyze
+	 * @return bool
+	 */
+	public static function isChannelName($string)
+	{
+		// Per the 2000 RFCs 2811 and 2812, channels may begin with &, #, +, or !
+		return (strspn($string, '#&+!', 0, 1) >= 1);
+	}
 }

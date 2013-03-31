@@ -39,22 +39,18 @@ class Channels extends Nette\Object implements Events\Subscriber
 
 	/**
 	 * Watches for channel joins/parts/kicks/bans
-	 * @param  string $data
-	 * @param  Aki\Irc\Connection $connection
+	 * @param  Irc\Event\IEvent $data
 	 * @return void
 	 */
-	public function onDataReceived($data, Irc\Connection $connection)
+	public function onDataReceived($data)
 	{
-		$tmp = explode(' ', $data, 5);
-		if ($tmp[1] === 'JOIN') {
-			$channel = ltrim($tmp[2], ':');
-			$this->session->channelJoined($channel);
-			$this->logger->logMessage(Irc\ILogger::INFO, 'Joined channel %s', $channel);
+		if ($data->type === Irc\Event\Request::TYPE_JOIN) {
+			$this->session->channelJoined($data->channel);
+			$this->logger->logMessage(Irc\ILogger::INFO, 'Joined channel %s', $data->channel);
 
-		} elseif ($tmp[1] === 'KICK' && $tmp[3] === $this->session->nick) {
-			$channel = ltrim($tmp[2], ':');
-			$this->session->channelKicked($channel);
-			$this->logger->logMessage(Irc\ILogger::WARNING, 'Kicked from channel %s by %s (reason: %s)', $channel, substr($tmp[0], 1, strpos($tmp[0], '!') - 1), ltrim($tmp[4], ':'));
+		} elseif ($data->type === Irc\Event\Request::TYPE_KICK && $data->user === $this->session->nick) {
+			$this->session->channelKicked($data->channel);
+			$this->logger->logMessage(Irc\ILogger::WARNING, 'Kicked from channel %s by %s (reason: %s)', $data->channel, $data->getNick(), $data->comment);
 		}
 	}
 

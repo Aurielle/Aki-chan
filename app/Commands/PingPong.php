@@ -22,32 +22,29 @@ use Kdyby\Events;
  */
 class PingPong extends Nette\Object implements Events\Subscriber
 {
-	/** @var Aki\Irc\Bot */
-	protected $bot;
+	/** @var Aki\Irc\Message */
+	protected $message;
 
 
 
-	public function __construct(Aki\Irc\Bot $bot)
+	public function __construct(Aki\Irc\Message $message)
 	{
-		$this->bot = $bot;
+		$this->message = $message;
 	}
 
 
 	/**
 	 * Responds to PING event.
-	 * @param  string $data
-	 * @param  Aki\Irc\Connection $connection
+	 * @param  Aki\Irc\Event\IEvent $data
 	 * @return void
 	 */
-	public function onDataReceived($data, $connection)
+	public function onDataReceived($data)
 	{
-		$data = Aki\Irc\Utils::stripFormatting($data);
-
-		// @see Aki\Irc\Bot::handleConnect() for data format explanation
-		$tmp = explode(' ', $data);
-		if ($tmp[0] === 'PING') {
-			$this->bot->send("PONG {$tmp[1]}");
+		if (!($data->type === Aki\Irc\Event\Request::TYPE_PING && !$data->isCtcp())) {
+			return;
 		}
+
+		$this->message->send('PONG ' . $data->server);
 	}
 
 

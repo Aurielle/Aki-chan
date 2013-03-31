@@ -47,9 +47,9 @@ class CtcpResponse extends Nette\Object implements Events\Subscriber
 	}
 
 
-	public function onDataReceived($data, $connection)
+	public function onDataReceived($data)
 	{
-		if ($matches = Nette\Utils\Strings::match($data, '#\:([^!]+)\![^ ]+ PRIVMSG ' . preg_quote($this->session->nick, '#') . " :\x01(VERSION|PING|TIME|SOURCE|FINGER) ?(.+)?\x01#")) {
+		if ($matches = Nette\Utils\Strings::match($data->rawData, '#\:([^!]+)\![^ ]+ PRIVMSG ' . preg_quote($this->session->nick, '#') . " :\x01(VERSION|PING|TIME|SOURCE|FINGER) ?(.+)?\x01#")) {
 			$this->{strtolower($matches[2])}($matches);
 		}
 	}

@@ -62,7 +62,11 @@ class Channels extends Nette\Object implements Events\Subscriber
 		$channels = $this->network->channels;
 
 		foreach ($channels as $channel) {
-			$this->joinChannel('#' . ltrim($channel, '#'));
+			if (!Aki\Irc\Utils::isChannelName($channel)) {
+				$channel = '#' . $channel;
+			}
+
+			$this->joinChannel($channel);
 		}
 
 		// Stop connecting phase
@@ -79,18 +83,16 @@ class Channels extends Nette\Object implements Events\Subscriber
 
 	/**
 	 * Handles replies to various messages from ChanServ.
-	 * @param  string $data
-	 * @param  Aki\Irc\Connection $connection
+	 * @param  Irc\Event\IEvent $data
 	 * @return void
 	 */
-	public function onDataReceived($data, Irc\Connection $connection)
+	public function onDataReceived($data)
 	{
-		$tmp = explode(' ', $data);
-		if (!($tmp[1] === 'NOTICE' && Nette\Utils\Strings::startsWith(ltrim($tmp[0], ':'), $this->network->setup->chanserv))) {
+		if (!($data->type === Irc\Event\Request::TYPE_NOTICE && $data->nickname === $this->network->setup->chanserv)) {
 			return;
 		}
 
-		$msg = Irc\Utils::stripFormatting(ltrim($tmp[3], ':'));
+		//$msg = Irc\Utils::stripFormatting(ltrim($tmp[3], ':'));
 		// @todo
 	}
 

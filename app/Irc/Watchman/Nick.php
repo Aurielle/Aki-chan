@@ -38,18 +38,17 @@ class Nick extends Nette\Object implements Events\Subscriber
 
 	/**
 	 * Watches for changes of bot's nick.
-	 * @param  string $data
-	 * @param  Aki\Irc\Connection $connection
+	 * @param  Irc\Event\IEvent $data
 	 * @return void
 	 */
-	public function onDataReceived($data, Irc\Connection $connection)
+	public function onDataReceived($data)
 	{
-		$tmp = explode(' ', $data, 4);
-
 		// Only watch for specific numeric codes
-		if (!in_array($tmp[1], ServerCodes::$nickSetters)) {
+		if (!$data instanceof Irc\Event\Response || !in_array($data->code, Irc\Event\Response::$nickSetters)) {
 			return;
 		}
+
+		$tmp = explode(' ', $data->rawData);
 
 		// Store current server to our variable
 		$server = ltrim($tmp[0], ':');

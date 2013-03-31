@@ -17,3 +17,7 @@ use Nette;
 class Exception extends \Exception {}
 
 class ConnectionException extends Exception {}
+
+class HostmaskException extends Exception {}
+
+class EventException extends Exception {}
