@@ -43,8 +43,12 @@ class AutoRejoin extends Nette\Object implements Events\Subscriber
 
 	public function setChannels(array $channels = array())
 	{
-		$this->channels = array_map(function($val) {
-			return '#' . ltrim($val, '#');
+		$this->channels = array_map(function($channel) {
+			if (!Aki\Irc\Utils::isChannelName($channel)) {
+				$channel = '#' . $channel;
+			}
+
+			return $channel;
 		}, $channels);
 	}
 
