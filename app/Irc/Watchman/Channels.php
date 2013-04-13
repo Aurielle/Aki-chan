@@ -44,7 +44,7 @@ class Channels extends Nette\Object implements Events\Subscriber
 	 */
 	public function onDataReceived($data)
 	{
-		if ($data->type === Irc\Event\Request::TYPE_JOIN) {
+		if ($data->type === Irc\Event\Request::TYPE_JOIN && $data->nick === $this->session->nick) {
 			$this->session->channelJoined($data->channel);
 			$this->logger->logMessage(Irc\ILogger::INFO, 'Joined channel %s', $data->channel);
 
