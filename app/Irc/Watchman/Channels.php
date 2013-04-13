@@ -48,6 +48,9 @@ class Channels extends Nette\Object implements Events\Subscriber
 			$this->session->channelJoined($data->channel);
 			$this->logger->logMessage(Irc\ILogger::INFO, 'Joined channel %s', $data->channel);
 
+		} elseif ($data->type === Irc\Event\Request::TYPE_JOIN) {
+			$this->session->onUserJoinedChannel($data->nick, $data->channel);
+
 		} elseif ($data->type === Irc\Event\Request::TYPE_KICK && $data->user === $this->session->nick) {
 			$this->session->channelKicked($data->channel);
 			$this->logger->logMessage(Irc\ILogger::WARNING, 'Kicked from channel %s by %s (reason: %s)', $data->channel, $data->getNick(), $data->comment);

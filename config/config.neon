@@ -40,6 +40,12 @@ services:
 		setup:
 			- setChannels(%autoRejoinChannels%)
 
+	autoVoice:
+		class: Aki\Commands\AutoVoice
+		tags: [kdyby.subscriber]
+		setup:
+			- setChannels(%autoVoiceChannels%)
+
 	parseLinks:
 		class: Aki\Commands\ParseLinks
 		tags: [kdyby.subscriber]

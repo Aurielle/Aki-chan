@@ -23,4 +23,5 @@ irc:
 
 parameters:
 	autoRejoinChannels: []
+	autoVoiceChannels: []
 	maxLinksPerMessage: 1

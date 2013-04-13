@@ -52,6 +52,8 @@ class Session extends Nette\Object
 	public $onUsermodeChange = array();
 	public $onChannelBotModeChange = array();
 
+	public $onUserJoinedChannel = array();
+
 
 
 	public function __construct()
