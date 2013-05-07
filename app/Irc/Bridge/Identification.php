@@ -112,7 +112,7 @@ class Identification extends Nette\Object implements Events\Subscriber
 	 */
 	public function onDataReceived($data)
 	{
-		if (!($data->type === Irc\Event\Request::TYPE_NOTICE && $data->nickname === $this->network->setup->nickserv)) {
+		if (!($data->type === Irc\Event\Request::TYPE_NOTICE && $data->getNick() === $this->network->setup->nickserv)) {
 			return;
 		}
 
