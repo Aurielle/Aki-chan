@@ -211,7 +211,7 @@ class ParseLinks extends Nette\Object implements Events\Subscriber
 			return FALSE;
 		}
 
-		$title = Nette\Utils\Strings::match($res->getResponse(), '#\<title[^>]*\>(.+)\<\/title\>#is');
+		$title = Nette\Utils\Strings::match($res->getResponse(), '#\\<title[^>]*\\>(.*?)\\<\\/title\\>#is');
 		return sprintf('[Web] %s', html_entity_decode(trim($title[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8'));	// title can contain any entity
 	}
 }
