@@ -177,9 +177,12 @@ class ParseLinks extends Nette\Object implements Events\Subscriber
 			return FALSE;
 		}
 
-		$text = str_replace(array("\r\n", "\r", "\n"), array("\n", "\n", ' '), $json['text']);
+		$text = isset($json['retweeted_status']) ? $json['retweeted_status']['text'] : $json['text'];
+		$user = isset($json['retweeted_status']) ? $json['retweeted_status']['user']['screen_name'] : $json['user']['screen_name'];
+
+		$text = str_replace(array("\r\n", "\r", "\n"), array("\n", "\n", ' '), $text);
 		$text = trim(htmlspecialchars_decode($text, ENT_QUOTES));
-		return sprintf('<%s> %s', $json['user']['screen_name'], $text);
+		return sprintf('<%s> %s', $user, $text);
 	}
 
 
