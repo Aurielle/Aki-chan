@@ -215,10 +215,15 @@ class ParseLinks extends Nette\Object implements Events\Subscriber
 		}
 
 		$title = Nette\Utils\Strings::match($res->getResponse(), '#\\<title[^>]*\\>(.*?)\\<\\/title\\>#is');
+		$flags = ENT_QUOTES;
+		if (PHP_VERSION_ID >= 50400) {
+			$flags = $flags | ENT_HTML5;
+		}
+
 		if (!$title || !$title[1]) {	// in case regexp does not match, need tests for this || title is empty
 		    return FALSE;
 		}
 
-		return sprintf('[Web] %s', html_entity_decode(trim($title[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8'));	// title can contain any entity
+		return sprintf('[Web] %s', html_entity_decode(trim($title[1]), $flags, 'UTF-8'));	// title can contain any entity
 	}
 }
