@@ -61,17 +61,18 @@ class ParseLinks extends Nette\Object implements Events\Subscriber
 			}
 
 			$i++;
-			if (Nette\Utils\Strings::endsWith($link[1], 'youtube.com') || Nette\Utils\Strings::endsWith($link[1], 'youtu.be')) {
-				$response = $this->youtube($link[0]);
+			$domain = substr($link[2], 0, strpos($link[2], '/'));
+			if (Nette\Utils\Strings::endsWith($domain, 'youtube.com') || Nette\Utils\Strings::endsWith($domain, 'youtu.be')) {
+				$response = $this->youtube($link[1]);
 
-			} elseif (Nette\Utils\Strings::endsWith($link[1], 'twitter.com')) {
-				$response = $this->twitter($link[0]);
+			} elseif (Nette\Utils\Strings::endsWith($domain, 'twitter.com')) {
+				$response = $this->twitter($link[1]);
 
-			} elseif (Nette\Utils\Strings::endsWith($link[1], 'facebook.com')) {
-				$response = $this->facebook($link[0]);
+			} elseif (Nette\Utils\Strings::endsWith($domain, 'facebook.com')) {
+				$response = $this->facebook($link[1]);
 
 			} else {
-				$response = $this->regularHtml($link[0]);
+				$response = $this->regularHtml($link[1]);
 			}
 
 			if ($response === FALSE) {
@@ -118,7 +119,7 @@ class ParseLinks extends Nette\Object implements Events\Subscriber
 			    |                           #   or
 			    [a-z0-9.\-]+[.][a-z]{2,4}/  # looks like domain name followed by a slash
 			  )
-			  (?:                       # One or more:
+			  (                       # One or more: (?: removed)
 			    [^\s()<>]+                  # Run of non-space, non-()<>
 			    |                           #   or
 			    \(([^\s()<>]+|(\([^\s()<>]+\)))*\)  # balanced parens, up to 2 levels
