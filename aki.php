@@ -36,7 +36,7 @@ if (function_exists('pcntl_signal')) {
 $configurator = new Aki\Config\Configurator();
 
 // Error visualization & logging
-$configurator->setDebugMode(TRUE);
+$configurator->setDebugMode(array('AURIELLE'));
 $configurator->enableDebugger(__DIR__ . '/log/error');
 
 // Autoloader and cache
