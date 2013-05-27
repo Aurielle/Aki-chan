@@ -46,23 +46,42 @@ $configurator->createRobotLoader()
 	->register();
 
 // Network settings
-// Redundant? This should be always enabled in CLI
-if (!isset($argc)) {
-	throw new Nette\NotSupportedException("PHP setting 'register_argc_argv' must be enabled in order to run Aki.");
-
-} elseif ($argc === 1) {
+// Aki runs using following command:
+// php aki.php <network> [--debug|--development|--production]
+if ($argc === 1) {
 	throw new Nette\InvalidStateException("Please specify network (neon file) to connect to.");
 
 } else {
 	array_shift($argv);	// Name of this script, or '-' if included from another (will fail in case above)
 
 	// Let's look for that config file, shall we?
-	$network = reset($argv);         	// only first argument
+	$network = array_shift($argv);   	// get the first argument
 	$network = trim($network, '"\'');	// get rid of quotes
 	$network = !Nette\Utils\Strings::endsWith($network, '.neon') ? $network . '.neon' : $network;
 
 	if (!is_file(__DIR__ . '/config/' . $network)) {
 		throw new Nette\FileNotFoundException("Config file '$network' doesn't exist.");
+	}
+
+	// More arguments are present, test the second one for the parameter
+	if (!empty($argv)) {
+		$param = array_shift($argv);
+		if ($param === '--debug' || $param === '--development') {
+			$configurator->setDebugMode(TRUE);
+
+		} elseif ($param === '--production') {
+			$configurator->setDebugMode(FALSE);
+
+		} else {
+			$args = array_merge(array($param), $argv);
+			$args = implode(' ', $args);
+			throw new Nette\NotSupportedException("Arguments '$args' are not supported.");
+		}
+
+		if (!empty($argv)) {
+			$args = implode(' ', $argv);
+			throw new Nette\NotSupportedException("Arguments '$args' are not supported.");
+		}
 	}
 }
 
