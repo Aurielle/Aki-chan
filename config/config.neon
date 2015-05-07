@@ -14,6 +14,9 @@ parameters:
 		token:
 		tokenSecret:
 
+	youtube:
+		apiKey:
+
 
 services:
 	logger:
@@ -51,6 +54,7 @@ services:
 		tags: [kdyby.subscriber]
 		setup:
 			- setLimit(%maxLinksPerMessage%)
+			- setYoutubeApiKey(%youtube.apiKey%)
 
 	twitter:
 		class: Aki\Twitter\Twitter(%twitter.consumerKey%, %twitter.consumerSecret%)

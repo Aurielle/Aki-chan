@@ -37,6 +37,8 @@ class ParseLinks extends Nette\Object implements Events\Subscriber
 	/** @var int */
 	protected $limit = 1;
 
+	/** @var string */
+	protected $youtubeApiKey;
 
 
 	public function __construct(Aki\Irc\Message $message, Curl\CurlSender $curlSender, Aki\Irc\Logger $logger, Aki\Twitter\Twitter $twitter)
@@ -136,36 +138,43 @@ class ParseLinks extends Nette\Object implements Events\Subscriber
 
 	private function youtube($link)
 	{
+		if (!$this->youtubeApiKey) {
+			return FALSE;
+		}
+
 		// Simplified version: (?<=v=)[a-zA-Z0-9-]+(?=&)|(?<=v\/)[^&\n]+|(?<=v=)[^&\n]+|(?<=youtu.be/)[^&\n]+
 		// Doesn't catch urls like http://www.youtube.com/user/Scobleizer#p/u/1/1p3vcRhsYGo
 		//
 		// This more complex version comes from http://stackoverflow.com/questions/5830387/how-to-find-all-youtube-video-ids-in-a-string-using-a-regex/5831191#5831191
 		$regex = '~
-			# Match non-linked youtube URL in the wild. (Rev:20111012)
-			https?://         # Required scheme. Either http or https.
-			(?:[0-9A-Z-]+\.)? # Optional subdomain.
-			(?:               # Group host alternatives.
-			  youtu\.be/      # Either youtu.be,
-			| youtube\.com    # or youtube.com followed by
-			  \S*             # Allow anything up to VIDEO_ID,
-			  [^\w\-\s]       # but char before ID is non-ID char.
-			)                 # End host alternatives.
-			([\w\-]{11})      # $1: VIDEO_ID is exactly 11 chars.
-			(?=[^\w\-]|$)     # Assert next char is non-ID or EOS.
-			(?!               # Assert URL is not pre-linked.
-			  [?=&+%\w]*      # Allow URL (query) remainder.
-			  (?:             # Group pre-linked alternatives.
-			    [\'"][^<>]*>  # Either inside a start tag,
-			  | </a>          # or inside <a> element text contents.
-			  )               # End recognized pre-linked alts.
-			)                 # End negative lookahead assertion.
-			[?=&+%\w-]*        # Consume any URL (query) remainder.
-			~ix';
+        # Match non-linked youtube URL in the wild. (Rev:20130823)
+        https?://         # Required scheme. Either http or https.
+        (?:[0-9A-Z-]+\.)? # Optional subdomain.
+        (?:               # Group host alternatives.
+          youtu\.be/      # Either youtu.be,
+        | youtube         # or youtube.com or
+          (?:-nocookie)?  # youtube-nocookie.com
+          \.com           # followed by
+          \S*             # Allow anything up to VIDEO_ID,
+          [^\w\s-]       # but char before ID is non-ID char.
+        )                 # End host alternatives.
+        ([\w-]{11})      # $1: VIDEO_ID is exactly 11 chars.
+        (?=[^\w-]|$)     # Assert next char is non-ID or EOS.
+        (?!               # Assert URL is not pre-linked.
+          [?=&+%\w.-]*    # Allow URL (query) remainder.
+          (?:             # Group pre-linked alternatives.
+            [\'"][^<>]*>  # Either inside a start tag,
+          | </a>          # or inside <a> element text contents.
+          )               # End recognized pre-linked alts.
+        )                 # End negative lookahead assertion.
+        [?=&+%\w.-]*        # Consume any URL (query) remainder.
+        ~ix';
 		$matches = Nette\Utils\Strings::match($link, $regex);
 		$vid = $matches[1];
 
-		$url = "http://gdata.youtube.com/feeds/api/videos/$vid?v=2&alt=json";
+		$url = "https://www.googleapis.com/youtube/v3/videos?part=snippet&id=$vid&key=" . $this->youtubeApiKey;
 		$ch = new Curl\Request($url);
+		$ch->setCertificationVerify(FALSE);
 		try {
 			$res = $this->curlSender->send($ch);
 
@@ -177,7 +186,7 @@ class ParseLinks extends Nette\Object implements Events\Subscriber
 		}
 
 		$json = json_decode($res->getResponse());
-		return sprintf('[YouTube] %s • http://youtu.be/%s', $json->entry->title->{'$t'}, $vid);
+		return sprintf('[YouTube] %s • http://youtu.be/%s', $json->items[0]->snippet->title, $vid);
 	}
 
 
@@ -247,5 +256,16 @@ class ParseLinks extends Nette\Object implements Events\Subscriber
 		$t = trim($title[1]);
 		$t = str_replace(array("\r\n", "\r", "\n"), array("\n", "\n", ' '), $t);
 		return sprintf('[Web] %s', html_entity_decode($t, $flags, 'UTF-8'));	// title can contain any entity
+	}
+
+
+	/**
+	 * @param string $youtubeApiKey
+	 * @return ParseLinks Provides a fluent interface.
+	 */
+	public function setYoutubeApiKey($youtubeApiKey)
+	{
+		$this->youtubeApiKey = $youtubeApiKey;
+		return $this;
 	}
 }
