@@ -215,8 +215,15 @@ class Message extends Nette\Object
 			$event = new Event\Response($cmd, $args);
 
 		} else {
-			$event = new Event\Request($cmd, $args, isset($reply));
-			$event->setHostmask($hostmask);
+			try {
+				$event = new Event\Request($cmd, $args, isset($reply));
+				$event->setHostmask($hostmask);
+			} catch (Nette\MemberAccessException $e) {
+				// invalid message, we don't know how to handle it
+				// log and throw it away
+				Nette\Diagnostics\Debugger::log($e, Nette\Diagnostics\Debugger::ERROR);
+				return;
+			}
 		}
 
 		$event->setRawData($rawData);
