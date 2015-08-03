@@ -45,7 +45,7 @@ class ParseLinks extends Nette\Object implements Events\Subscriber
 		'jpg', 'jpeg', 'gif', 'png', 'mp4', 'gifv', 'webm', 'flv', 'mkv', 'avi', 'ogg', 'm4a', 'mka', 'm4v',
 		'mp3', 'aac', 'ass', 'srt', 'mks', 'm2ts', 'ts', 'wmv', 'wma', 'pdf', 'doc', 'docx', 'xls', 'xlsx',
 		'ppt', 'pptx', 'flac', 'waw', 'torrent', 'bmp', 'psd', 'ai', 'cr2', 'rar', 'zip', 'exe', 'dll', '7z', 'iso',
-		'tar', 'gz', 'jar', 'dng', 'tif', 'tiff', 'mov', 'ape', 'dts', 'truehd',
+		'tar', 'gz', 'jar', 'dng', 'tif', 'tiff', 'mov', 'ape', 'dts', 'truehd', 'msi', 'ac3', 'dtshd',
 	);
 
 
