@@ -40,6 +40,14 @@ class ParseLinks extends Nette\Object implements Events\Subscriber
 	/** @var string */
 	protected $youtubeApiKey;
 
+	/** @var array */
+	protected $mediaExtensions = array(
+		'jpg', 'jpeg', 'gif', 'png', 'mp4', 'gifv', 'webm', 'flv', 'mkv', 'avi', 'ogg', 'm4a', 'mka', 'm4v',
+		'mp3', 'aac', 'ass', 'srt', 'mks', 'm2ts', 'ts', 'wmv', 'wma', 'pdf', 'doc', 'docx', 'xls', 'xlsx',
+		'ppt', 'pptx', 'flac', 'waw', 'torrent', 'bmp', 'psd', 'ai', 'cr2', 'rar', 'zip', 'exe', 'dll', '7z', 'iso',
+		'tar', 'gz', 'jar', 'dng', 'tif', 'tiff', 'mov', 'ape', 'dta', 'truehd',
+	);
+
 
 	public function __construct(Aki\Irc\Message $message, Curl\CurlSender $curlSender, Aki\Irc\Logger $logger, Aki\Twitter\Twitter $twitter)
 	{
@@ -72,6 +80,9 @@ class ParseLinks extends Nette\Object implements Events\Subscriber
 
 			} elseif (Nette\Utils\Strings::endsWith($domain, 'facebook.com')) {
 				$response = $this->facebook($link[1]);
+
+			} elseif ($this->containsMedia($link[1])) {
+				$response = $this->media($link[1], $matches[1]);
 
 			} else {
 				$response = $this->regularHtml($link[1]);
@@ -258,6 +269,26 @@ class ParseLinks extends Nette\Object implements Events\Subscriber
 		return sprintf('[Web] %s', html_entity_decode($t, $flags, 'UTF-8'));	// title can contain any entity
 	}
 
+
+	private function containsMedia($link)
+	{
+		foreach ($this->mediaExtensions as $ext) {
+			if (Nette\Utils\Strings::endsWith($link, ".$ext")) {
+				return TRUE;
+			}
+		}
+
+		return FALSE;
+	}
+
+	private function media($link, $sender)
+	{
+		if (Nette\Utils\Strings::endsWith($link, '.mkv')) {
+			return sprintf("%s: Please don't rape me with such big files! t ( - _ - t )", $sender);
+		}
+
+		return FALSE;
+	}
 
 	/**
 	 * @param string $youtubeApiKey
